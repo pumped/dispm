@@ -151,10 +151,10 @@ void genClust (int *nrow, int *ncol, int *ncls, int *niter, int *thrs,
     /*
     ** Iterate the migration simulation.
     */
-    Rprintf ("Running the genetic clusters migration simulation.\n");
+    printf ("Running the genetic clusters migration simulation.\n");
     for (iter = 1; iter <= nrIterations; iter++)
     {
-        Rprintf ("  %d...\n", iter);
+        printf ("  %d...\n", iter);
         /*
         ** Read the next suitability and barrier data files.
         */
@@ -250,7 +250,7 @@ void genClust (int *nrow, int *ncol, int *ncls, int *niter, int *thrs,
             }
         }
     }
-    Rprintf ("done.\n");
+    printf ("done.\n");
 
 End_of_Routine:
     /*

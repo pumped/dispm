@@ -58,7 +58,7 @@ int mcInit (char *paramFile)
   if ((fp = fopen(paramFile, "r")) == NULL)
   {
     status = -1;
-    Rprintf ("Can't open parameter file %s\n", paramFile);
+    printf ("Can't open parameter file %s\n", paramFile);
     goto End_of_Routine;
   }
 
@@ -77,7 +77,7 @@ int mcInit (char *paramFile)
       if ((sscanf (line, "nrRows %d", &nrRows) != 1) || (nrRows < 1))
       {
 	status = -1;
-	Rprintf ("Invalid number of rows on line %d in parameter file %s\n",
+	printf ("Invalid number of rows on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -88,7 +88,7 @@ int mcInit (char *paramFile)
       if ((sscanf (line, "nrCols %d", &nrCols) != 1) || (nrCols < 1))
       {
 	status = -1;
-	Rprintf ("Invalid number of columns on line %d in parameter file %s\n",
+	printf ("Invalid number of columns on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -99,7 +99,7 @@ int mcInit (char *paramFile)
       if (sscanf (line, "iniDist %s", iniDist) != 1)
       {
 	status = -1;
-	Rprintf ("Invalid initial distribution file name on line %d in parameter file %s\n",
+	printf ("Invalid initial distribution file name on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -110,7 +110,7 @@ int mcInit (char *paramFile)
       if (sscanf (line, "hsMap %s", hsMap) != 1)
       {
 	status = -1;
-	Rprintf ("Invalid habitat suitability map file name on line %d in parameter file %s\n",
+	printf ("Invalid habitat suitability map file name on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -121,7 +121,7 @@ int mcInit (char *paramFile)
       if (sscanf (line, "barrier %s", barrier) != 1)
       {
 	status = -1;
-	Rprintf ("Invalid barrier file name on line %d in parameter file %s\n",
+	printf ("Invalid barrier file name on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -133,7 +133,7 @@ int mcInit (char *paramFile)
       if (sscanf (line, "barrierType %s", param) != 1)
       {
 	status = -1;
-	Rprintf ("Invalid barrier type on line %d in parameter file %s\n",
+	printf ("Invalid barrier type on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -148,7 +148,7 @@ int mcInit (char *paramFile)
       else
       {
 	status = -1;
-	Rprintf ("Invalid barrier type on line %d in parameter file %s\n",
+	printf ("Invalid barrier type on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -160,7 +160,7 @@ int mcInit (char *paramFile)
 	  (envChgSteps < 1))
       {
 	status = -1;
-	Rprintf ("Invalid number of environmental change steps on line %d in parameter file %s\n",
+	printf ("Invalid number of environmental change steps on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -172,7 +172,7 @@ int mcInit (char *paramFile)
 	  (dispSteps < 1))
       {
 	status = -1;
-	Rprintf ("Invalid number of dispersal steps on line %d in parameter file %s\n",
+	printf ("Invalid number of dispersal steps on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -184,7 +184,7 @@ int mcInit (char *paramFile)
 	  (dispDist < 1))
       {
 	status = -1;
-	Rprintf ("Invalid dispersal distance on line %d in parameter file %s\n",
+	printf ("Invalid dispersal distance on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -193,7 +193,7 @@ int mcInit (char *paramFile)
       if (fscanf (fp, "dispKernel %f", &p) != 1)
       {
 	status = -1;
-	Rprintf ("Dispersal kernel expected on line %d in parameter file %s\n",
+	printf ("Dispersal kernel expected on line %d in parameter file %s\n",
 		 line, paramFile);
 	goto End_of_Routine;
       }
@@ -203,7 +203,7 @@ int mcInit (char *paramFile)
 	if (fscanf (fp, "%f", &p) != 1)
 	{
 	  status = -1;
-	  Rprintf ("Invalid dispersal kernel values on line %d in parameter file %s.\n",
+	  printf ("Invalid dispersal kernel values on line %d in parameter file %s.\n",
 		   line, paramFile);
 	  goto End_of_Routine;
 	}
@@ -218,7 +218,7 @@ int mcInit (char *paramFile)
 	  (iniMatAge < 1))
       {
 	status = -1;
-	Rprintf ("Invalid initial maturity age on line %d in parameter file %s\n",
+	printf ("Invalid initial maturity age on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -230,7 +230,7 @@ int mcInit (char *paramFile)
 	  (fullMatAge < 1))
       {
 	status = -1;
-	Rprintf ("Invalid full maturity age on line %d in parameter file %s\n",
+	printf ("Invalid full maturity age on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -244,7 +244,7 @@ int mcInit (char *paramFile)
       if (fscanf (fp, "propaguleProd %f", &p) != 1)
       {
 	status = -1;
-	Rprintf ("Seed production probabilities expected on line %d in parameter file %s\n",
+	printf ("Seed production probabilities expected on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -254,7 +254,7 @@ int mcInit (char *paramFile)
 	if (fscanf (fp, "%f", &p) != 1)
 	{
 	  status = -1;
-	  Rprintf ("Invalid seed production probability on line %d in parameter file %s\n",
+	  printf ("Invalid seed production probability on line %d in parameter file %s\n",
 		   lineNr, paramFile);
 	  goto End_of_Routine;
 	}
@@ -269,7 +269,7 @@ int mcInit (char *paramFile)
 	  (rcThreshold < 0) || (rcThreshold > 1000))
       {
 	status = -1;
-	Rprintf ("Invalid reclassification threshold on line %d in parameter file %s\n",
+	printf ("Invalid reclassification threshold on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -281,7 +281,7 @@ int mcInit (char *paramFile)
 	  (p < 0.0) || (p > 1.0))
       {
 	status = -1;
-	Rprintf ("Invalid long-distance dispersal frequency on line %d in parameter file %s\n",
+	printf ("Invalid long-distance dispersal frequency on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -293,7 +293,7 @@ int mcInit (char *paramFile)
       if ((sscanf (line, "lddMinDist %d", &lddMinDist) != 1) || (lddMinDist < 0))
       {
 	status = -1;
-	Rprintf ("Invalid minimum long-distance dispersal value on line %d in parameter file %s\n",
+	printf ("Invalid minimum long-distance dispersal value on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -304,7 +304,7 @@ int mcInit (char *paramFile)
       if ((sscanf (line, "lddMaxDist %d", &lddMaxDist) != 1) || (lddMaxDist <= lddMinDist))
       {
 	status = -1;
-	Rprintf ("Invalid maximum long-distance dispersal value on line %d in parameter file %s\n",
+	printf ("Invalid maximum long-distance dispersal value on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -315,7 +315,7 @@ int mcInit (char *paramFile)
       if (sscanf (line, "fullOutput %s", param) != 1)
       {
 	status = -1;
-	Rprintf ("Incomplete 'fullOutput' argument on line %d in parameter file %s\n",
+	printf ("Incomplete 'fullOutput' argument on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -330,7 +330,7 @@ int mcInit (char *paramFile)
       else
       {
 	status = -1;
-	Rprintf ("Invalid value for argument 'fullOutput' on line %d in parameter file %s\n", lineNr, paramFile);
+	printf ("Invalid value for argument 'fullOutput' on line %d in parameter file %s\n", lineNr, paramFile);
 	goto End_of_Routine;
       }
     }
@@ -340,7 +340,7 @@ int mcInit (char *paramFile)
       if(sscanf(line, "replicateNb %d", &replicateNb) != 1)  /* On success, the function returns the number of variables filled.  */
       {
 	    status = -1;
-	    Rprintf ("Invalid value for replicateNb parameter on line %d in parameter file %s\n", lineNr, paramFile);
+	    printf ("Invalid value for replicateNb parameter on line %d in parameter file %s\n", lineNr, paramFile);
 	    goto End_of_Routine;
       }   
     }
@@ -351,7 +351,7 @@ int mcInit (char *paramFile)
       if (sscanf (line, "simulName %s", simulName) != 1)
       {
 	status = -1;
-	Rprintf ("Invalid output file name on line %d in parameter file %s\n",
+	printf ("Invalid output file name on line %d in parameter file %s\n",
 		 lineNr, paramFile);
 	goto End_of_Routine;
       }
@@ -360,7 +360,7 @@ int mcInit (char *paramFile)
     else
     {
       status = -1;
-      Rprintf ("Unknown parameter on line %d in parameter file %s\n", lineNr,
+      printf ("Unknown parameter on line %d in parameter file %s\n", lineNr,
 	      paramFile);
       goto End_of_Routine;
     }
@@ -372,69 +372,69 @@ int mcInit (char *paramFile)
   if (nrRows == 0)
   {
     status = -1;
-    Rprintf ("No number of rows specified in parameter file %s\n", paramFile);
+    printf ("No number of rows specified in parameter file %s\n", paramFile);
     goto End_of_Routine;
   }
   if (nrCols == 0)
   {
     status = -1;
-    Rprintf ("No number of columns specified in parameter file %s\n",
+    printf ("No number of columns specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
   if (strlen (iniDist) == 0)
   {
     status = -1;
-    Rprintf ("No initial distribution file name specified in parameter file %s\n",
+    printf ("No initial distribution file name specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
   if (strlen (hsMap) == 0)
   {
     status = -1;
-    Rprintf ("No habitat suitability map file name specified in parameter file %s\n",
+    printf ("No habitat suitability map file name specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
   if (useBarrier && (strlen (barrier) == 0))
   {
     status = -1;
-    Rprintf ("No barrier file name specified in parameter file %s\n",
+    printf ("No barrier file name specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
   if (envChgSteps == 0)
   {
     status = -1;
-    Rprintf ("No number of environmental change steps specified in parameter file %s\n",
+    printf ("No number of environmental change steps specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
   if (dispSteps == 0)
   {
     status = -1;
-    Rprintf ("No number of dispersal steps specified in parameter file %s\n",
+    printf ("No number of dispersal steps specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
   if (dispDist == 0)
   {
     status = -1;
-    Rprintf ("No dispersal distance specified in parameter file %s\n",
+    printf ("No dispersal distance specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
   if (iniMatAge == 0)
   {
     status = -1;
-    Rprintf ("No initial maturity age specified in parameter file %s\n",
+    printf ("No initial maturity age specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
   if (fullMatAge == 0)
   {
     status = -1;
-    Rprintf ("No full maturity age specified in parameter file %s\n",
+    printf ("No full maturity age specified in parameter file %s\n",
 	     paramFile);
     goto End_of_Routine;
   }
@@ -482,7 +482,7 @@ int readMat (char *fName, int **mat)
   if ((fp = fopen(fName, "r")) == NULL)
   {
     status = -1;
-    Rprintf ("Can't open data file %s\n", fName);
+    printf ("Can't open data file %s\n", fName);
     goto End_of_Routine;
   }
 
@@ -494,13 +494,13 @@ int readMat (char *fName, int **mat)
       (strcasecmp (param, "ncols") != 0))
   {
     status = -1;
-    Rprintf ("'ncols' expected in data file %s.\n", fName);
+    printf ("'ncols' expected in data file %s.\n", fName);
     goto End_of_Routine;
   }
   if (intVal != nrCols)
   {
     status = -1;
-    Rprintf ("Invalid number of columns in data file %s\n", fName);
+    printf ("Invalid number of columns in data file %s\n", fName);
     goto End_of_Routine;
   }
   if ((fgets (line, 1024, fp) == NULL) ||
@@ -508,13 +508,13 @@ int readMat (char *fName, int **mat)
       (strcasecmp (param, "nrows") != 0))
   {
     status = -1;
-    Rprintf ("'nrows' expected in data file %s\n", fName);
+    printf ("'nrows' expected in data file %s\n", fName);
     goto End_of_Routine;
   }
   if (intVal != nrRows)
   {
     status = -1;
-    Rprintf ("Invalid number of rows in data file %s.\n", fName);
+    printf ("Invalid number of rows in data file %s.\n", fName);
     goto End_of_Routine;
   }
   if ((fgets (line, 1024, fp) == NULL) ||
@@ -522,7 +522,7 @@ int readMat (char *fName, int **mat)
       (strcasecmp (param, "xllcorner") != 0))
   {
     status = -1;
-    Rprintf ("'xllcorner' expected in data file %s\n", fName);
+    printf ("'xllcorner' expected in data file %s\n", fName);
     goto End_of_Routine;
   }
   xllCorner = strtod (dblVal, NULL);
@@ -531,7 +531,7 @@ int readMat (char *fName, int **mat)
       (strcasecmp (param, "yllcorner") != 0))
   {
     status = -1;
-    Rprintf ("'yllcorner' expected in data file %s\n", fName);
+    printf ("'yllcorner' expected in data file %s\n", fName);
     goto End_of_Routine;
   }
   yllCorner = strtod (dblVal, NULL);
@@ -540,7 +540,7 @@ int readMat (char *fName, int **mat)
       (strcasecmp (param, "cellsize") != 0))
   {
     status = -1;
-    Rprintf ("'cellsize' expected in data file %s\n", fName);
+    printf ("'cellsize' expected in data file %s\n", fName);
     goto End_of_Routine;
   }
   cellSize = strtod (dblVal, NULL);
@@ -549,7 +549,7 @@ int readMat (char *fName, int **mat)
       (strcasecmp (param, "nodata_value") != 0))
   {
     status = -1;
-    Rprintf ("'NODATA_value' expected in data file %s\n", fName);
+    printf ("'NODATA_value' expected in data file %s\n", fName);
     goto End_of_Routine;
   }
   
@@ -563,7 +563,7 @@ int readMat (char *fName, int **mat)
       if (fscanf(fp, "%d", &intVal) != 1)
       {
 	    status = -1;
-        Rprintf ("Invalid value in data file %s\n", fName);
+        printf ("Invalid value in data file %s\n", fName);
         goto End_of_Routine;
       }
       mat[i][j] = intVal;
@@ -613,7 +613,7 @@ int writeMat (char *fName, int **mat)
   if ((fp = fopen(fName, "w")) == NULL)
   {
     status = -1;
-    Rprintf ("Can't open data file %s for writing.\n", fName);
+    printf ("Can't open data file %s for writing.\n", fName);
     goto End_of_Routine;
   }
 

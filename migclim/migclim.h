@@ -17,6 +17,7 @@
 #include <math.h>
 
 
+
 /*
 ** Defines.
 **
@@ -60,7 +61,7 @@ int  writeMat            (char *fName, int **mat);
 void genClust            (int *nrow, int *ncol, int *ncls, int *niter, int *thrs, char **suitBaseName,
                           char **barrBaseName, char **outBaseName, char **initFile);
 void validate            (char **obsFileName, int *npts, char **simFileName, int *ncls, double *bestScore);
-int main 				 (int argc, char const *argv[])
+int main 				 (int argc, char const *argv[]);
 
 
 #endif  /* _MIGCLIM_H_ */

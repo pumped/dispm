@@ -5,6 +5,7 @@
 
 #include "migclim.h"
 #include <time.h>
+#include <math.h>
 
 
 /*
@@ -312,7 +313,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
         else
         {
             *nrFiles = -1;
-            Rprintf ("Could not open statistics file for writing.\n");
+            printf ("Could not open statistics file for writing.\n");
             goto End_of_Routine;
         }
 
@@ -321,14 +322,14 @@ void mcMigrate (char **paramFile, int *nrFiles)
         /* **************************************************************** */
         /* Simulate plant dispersal and migration (the core of the method). */
         /* **************************************************************** */
-        Rprintf("Running MigClim simulation %s.\n", simulName2);
+        printf("Running MigClim simulation %s.\n", simulName2);
 
         /* Start of environmental change step loop (if simulation is run without change in environment this loop runs only once). */
         for (envChgStep = 1; envChgStep <= envChgSteps; envChgStep++)
         {
 
             /* Print the current environmental change iteration. */
-            Rprintf ("  %d...\n", envChgStep);
+            printf ("  %d...\n", envChgStep);
 
             /* Load the habitat suitability layer for the current envChgStep. */
             sprintf (fileName, "%s%d.asc", hsMap, envChgStep);
@@ -635,7 +636,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
             }
 
         } /* END OF: envChgStep loop */
-        Rprintf("All dispersal steps completed. Final output in progress...\n");
+        printf("All dispersal steps completed. Final output in progress...\n");
 
 
         /* Update currentState matrix for pixels that are suitable but
@@ -670,7 +671,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
         else
         {
             *nrFiles = -1;
-            Rprintf ("Could not write summary output to file.\n");
+            printf ("Could not write summary output to file.\n");
             goto End_of_Routine;
         }
 
@@ -722,7 +723,7 @@ End_of_Routine:
 
 
     /* If an error occured, display failure message to the user... */
-    if (*nrFiles == -1) Rprintf("MigClim simulation aborted...\n");
+    if (*nrFiles == -1) printf("MigClim simulation aborted...\n");
 
 }
 
