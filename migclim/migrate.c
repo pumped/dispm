@@ -304,6 +304,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
 
         /* Write the initial state to the data file. */
         sprintf(fileName, "%s/%s_stats.txt", simulName, simulName2);
+        printf(fileName);
         if ((fp = fopen (fileName, "w")) != NULL)
         {
             fprintf (fp, "envChgStep\tdispStep\tstepID\tunivDispersal\tNoDispersal\toccupied\tabsent\tstepColonized\tstepDecolonized\tstepLDDsuccess\n");

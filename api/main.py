@@ -13,6 +13,6 @@ try:
 	server.run()
 
 finally:
-	print 'Error: Cylons are killing users!'
+	print 'Aborted: Unicorns are killing users!'
 	print 'Waiting for Tasks to stop'
 	controller.quit = True

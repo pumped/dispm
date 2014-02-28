@@ -1,4 +1,6 @@
 
+from Dispm import Dispm
+
 class Model():
 
 	def __init__(self):
