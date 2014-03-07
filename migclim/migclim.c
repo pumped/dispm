@@ -11,7 +11,7 @@
 
 int main( int argc, char const *argv[] ) {
 	/* code */
-	char *param = "testPath";
+	char *param = "mig_mic_curr/mig_mic_curr_params.txt";
 	int nrFiles = 12;
 
 	mcMigrate(&param, &nrFiles);
