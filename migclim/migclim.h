@@ -50,7 +50,7 @@ extern bool    useBarrier, fullOutput;
 */
 void mcMigrate           (char **paramFile, int *nrFiles);
 bool mcSrcCell           (int i, int j, int **curState, int **pxlAge,
-			  int loopID, int habSuit, int **barriers);
+			  int loopID, int habSuit, int **barriers, bool tail);
 int  mcUnivDispCnt       (int **habSuit);
 void updateNoDispMat     (int **hsMat, int **noDispMat, int *noDispCount);
 void mcFilterMatrix      (int **inMatrix, int **filterMatrix, bool filterNoData, bool filterOnes, bool insertNoData);

@@ -32,9 +32,9 @@
 */
 
 bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
-		int habSuit, int **barriers)
+		int habSuit, int **barriers, bool tail)
 {
-  int    k, l, realDist, pxlSizeFactor;
+  int    k, l, realDist, pxlSizeFactor,kDispDist;
   double probCol, rnd;
   bool   sourceFound;
 
@@ -49,9 +49,19 @@ bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
   ** Search for a potential source cell. i and j are the coordinates of the
   ** sink cell. k and l are the coordinates of the potential source cell.
   */
+
+  if (!tail) {
+  	//printf("short");
+  	kDispDist = -dispDist;
+  } else {
+  	kDispDist = dispDist;
+  	//printf("full");
+  }
+
+
   for (k = i - dispDist; k <= i + dispDist; k++)
   {
-    for (l = j - dispDist; l <= j + dispDist; l++)
+    for (l = j - kDispDist; l <= j + dispDist; l++)
     {
       /*
       ** 1. Test of basic conditions to see if a pixel could be a potential

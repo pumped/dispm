@@ -43,8 +43,8 @@ bool mcSinkCellCheck (pixel pix, int **curState, int **habSuit);
 
 void mcMigrate (char **paramFile, int *nrFiles)
 {
-    int     i, j, RepLoop, envChgStep, dispStep, loopID, simulTime;
-    bool    advOutput, habIsSuitable, cellInDispDist, tempResilience;
+    int     i, j, RepLoop, envChgStep, dispStep, loopID, simulTime,last;
+    bool    advOutput, habIsSuitable, cellInDispDist, tempResilience, tail;
     char    fileName[128], simulName2[128];
     FILE   *fp = NULL, *fp2 = NULL;
     double  lddSeedProb;
@@ -167,6 +167,11 @@ void mcMigrate (char **paramFile, int *nrFiles)
         pixelAge[i] = (int *)malloc (nrCols * sizeof (int));
         noDispersal[i] = (int *)malloc (nrCols * sizeof (int));
     }
+
+
+    clock_t begin, end;
+    double time_spent;
+    FILE *f = fopen("timing.csv", "w");
 
     /* Replicate the simulation replicateNb times. If replicateNb > 1 then the
     ** simulation's output names are "simulName1", "simulName2", etc... */
@@ -434,6 +439,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
             /* *************************************** */
             for (dispStep = 1; dispStep <= dispSteps; dispStep++)
             {
+                begin=clock();
 
                 /* Set the value of "loopID" for the current iteration of the dispersal loop. */
                 loopID++;
@@ -484,8 +490,18 @@ void mcMigrate (char **paramFile, int *nrFiles)
                         **    function). */
                         if (habIsSuitable)
                         {
+                            if (last > 5) {  //we don't want to do a full search if it isn't necessary.
+                                tail = false;
+                            } else { //we need to search the tail as well
+                                tail = true;
+                            }
                             /* Now we search if there is a suitable source cell to colonize the sink cell. */
-                            if (mcSrcCell (i, j, currentState, pixelAge, loopID, habSuitability[i][j], barriers)) cellInDispDist = true;
+                            if (mcSrcCell (i, j, currentState, pixelAge, loopID, habSuitability[i][j], barriers, tail)) {
+                                cellInDispDist = true;
+                                last=0;  
+                            } else {
+                                last++;
+                            }
                         }
 
                         /* Update pixel status. */
@@ -505,6 +521,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
                             pixelAge[i][j] = 0;
                         }
                     }
+                    
                 }
 
                 /* If the LDD frequence is larger than zero, perform it. */
@@ -617,6 +634,13 @@ void mcMigrate (char **paramFile, int *nrFiles)
                         goto End_of_Routine;
                     }
                 }
+
+                end = clock();
+                time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+                fprintf(f,"%lf\n",time_spent);
+                printf("Step %d completed in %lf \n",dispStep,time_spent);
+
+
             } /* END OF: dispStep */
 
 
@@ -692,6 +716,8 @@ End_of_Routine:
 
     /* Close the data file. */
     if (fp != NULL) fclose (fp);
+
+    fclose(f);
 
     /* Free the allocated memory. */
     if (currentState != NULL)
