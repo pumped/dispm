@@ -1,30 +1,53 @@
-from bottle import static_file, route, run
+from bottle import Bottle, static_file, route, run
+from logger import *
+import json
 
 
 class Server():
 	controller = None
 
-	@route('/')
-	def default():
+	def __init__(self, host='0.0.0.0', port=5566):
+		self._host = host
+		self._port = port
+		self._app = Bottle()
+		self._route()
+
+	def _route(self):
+		self._app.route('/',callback=self.default)
+		self._app.route('/status',callback=self.status)
+		self._app.route('/set/<project>',callback=self.setData)
+		self._app.route('/setPU/<project>/<id>/<value>',callback=self.setPU)
+		self._app.route('/restore/<project>',callback=self.restore)
+		self._app.route('/runModel',callback=self.runModel)
+
+	# /
+	def default(self):
 	    return "Welcome to the Dispersal Modelling Web API"
 
-	@route('/status')
-	def status():
-		stats = "Model: Stopped \n"
+	# /status
+	def status(self,):
+		logs = log.getLiveLog()
+		modelStatus = "Not Running"
+		stats = json.dumps({"modelStatus":modelStatus,"logs":logs}, sort_keys=True, indent=4, separators=(',', ': '))
 		#stats += "Queue: " + self.controller.getStatus() +"\n"
 		return stats
 
-	@route('/set/<project>')
-	def setData(project="Demo"):
-	    return "Marxan Ran"
+	# /set/<project>
+	def setData(self, project="Demo"):
+	    return "Project changed"
 
-	@route('/setPU/<project>/<id>/<value>')
-	def setPU(project,id,value):
+	# /setPU/<project>/<id>/<value>
+	def setPU(self, project, id, value):
 		return "PU Set " + project + " " + id + " " + value
 		
-	@route('/restore/<project>')
-	def restore(project):
+	# /restore/<project>
+	def restore(self, project):
 		return "Model Reset"
+
+	# /runModel
+	def runModel(self):
+		self.controller.modelQueue.put("test")
+		return "Modeller Started"
 
 	# @route('/data/<filename>')
 	# def server_static(filename):
@@ -36,5 +59,6 @@ class Server():
 	    return '{"error" : {"code" : 404, "string" : "Invalid Request"}}'
 
 	def run(self):
-		print self.controller
-		run(host='0.0.0.0', port=5566, debug=True)
+		self._app.run(host=self._host, port=self._port)
+		pass
+		#run(host='0.0.0.0', port=5566, debug=True)

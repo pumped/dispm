@@ -1,3 +1,4 @@
+from logger import *
 
 class Model():
 
@@ -5,7 +6,12 @@ class Model():
 		pass
 
 	def runTask(self,id):
-		print 'Running Modelling Task with ID: ' + id
+		#write out the params file
+
+		#determine a name for this run
+
+		#run the simulation
+		log.info('Running Modelling Task with ID: ' + str(id))
 
 	def killTask(self):
 		pass

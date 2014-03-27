@@ -4,6 +4,7 @@
 import threading
 import Queue
 from Model import Model
+from logger import *
 
 class Controller (threading.Thread):
 
@@ -15,16 +16,16 @@ class Controller (threading.Thread):
 	#constructor
 	def __init__(self):
 		threading.Thread.__init__(self)
-		print 'Controller Initialised'
+		log.debug('Controller Initialised')
 
 	def __del__(self):
-		print 'Controller Terminated'
+		log.debug('Controller Terminated')
 
 	def getStatus():
 		return self.modelQueue.qsize()
 
 	def run(self):
-		print 'Control thread started'
+		log.debug('Control thread started')
 
 		while True:
 			#wait for queue items
