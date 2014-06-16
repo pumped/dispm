@@ -1,0 +1,71 @@
+<html>
+<head>
+	<style type="text/css">
+		h1, h2 {
+			font-family:helvetica;
+		}
+		li {
+			font-size:1.2em;
+			font-weight:bold;
+			margin-bottom:20px;
+		}
+		li a:link, li a:visited {
+			color:#000;
+		}
+		li a:hover {
+			color:#666;
+		}
+		.description{
+			font-size:0.8em;
+			font-weight:normal;
+			display:block;
+		}
+		#status {
+			border:1px solid #ddd;
+			font-size:10px;
+			min-height:200px;
+			width:600px;
+		}
+	</style>
+	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript">
+		function updateStatus() {
+			$.getJSON( "status", function( data ) { 
+				console.log(data)
+				$('#mRunning').html(data.modelStatus);
+
+				$('#status').html("");
+				for (k in data.logs) {
+					$('#status').prepend(data.logs[k].message + "</br>");
+				}
+				setTimeout(updateStatus, 5000);						
+			});
+		}
+		updateStatus();
+	</script>
+</head>
+<body>
+
+	<h1>Welcome to the dispersal modelling API</h1>
+
+	<h2>Methods</h2>
+
+	<h3>Reporting</h3>
+	<ul>
+		<li><a href="/status">/status</a><span class="description">Returns JSON status of the system.</span></li>
+	</ul>
+
+	<h3>Control</h3>
+	<ul>
+		<li>/set/&lt;project&gt; <span class="description">Sets the current base project being modified.</span></li>
+		<li>/setPU/&lt;project&gt;/&lt;id&gt;/&lt;value&gt; <span class="description">Sets the current action on a specific planning unit.</span></li>
+		<li><a href="/runModel">/runModel</a><span class="description">Runs the model on the current project. Test</span></li>
+
+	</ul>
+
+	<div>Model Running: <span id="mRunning"></span></div>
+	<div id="status"></div>
+
+</body>
+
+</html>

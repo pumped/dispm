@@ -22,7 +22,7 @@ class Server():
 
 	# /
 	def default(self):
-	    return "Welcome to the Dispersal Modelling Web API"
+	    return static_file('index.html', root='data/web/')
 
 	# /status
 	def status(self,):
