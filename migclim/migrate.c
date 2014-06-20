@@ -43,7 +43,7 @@ bool mcSinkCellCheck (pixel pix, int **curState, int **habSuit);
 
 void mcMigrate (char **paramFile, int *nrFiles)
 {
-    int     i, j, RepLoop, envChgStep, dispStep, loopID, simulTime,last;
+    int     i, j, k, RepLoop, envChgStep, dispStep, loopID, simulTime,last;
     bool    advOutput, habIsSuitable, cellInDispDist, tempResilience, tail;
     char    fileName[128], simulName2[128];
     FILE   *fp = NULL, *fp2 = NULL;
@@ -133,6 +133,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
     **   - noDispersal:    Values in [0;255].
     */
     int **currentState, **habSuitability, **barriers, **pixelAge, **noDispersal;
+    int ***aggregates;
 
 
     /* Initialize the variables. */
@@ -168,10 +169,27 @@ void mcMigrate (char **paramFile, int *nrFiles)
         noDispersal[i] = (int *)malloc (nrCols * sizeof (int));
     }
 
+    // Allocate memory for the aggregates and zero
+    printf("Dispersal Steps: %d\nNrRows: %d\nNrCols: %d\n", dispSteps, nrRows, nrCols);
+    aggregates = (int ***)malloc (dispSteps * sizeof (int **));
+    for (i=0; i<dispSteps;i++) {
+        aggregates[i] = (int **)malloc (nrRows * sizeof (int *));
+        for (j=0;j<nrRows;j++) {
+            aggregates[i][j] = (int *)malloc (nrCols * sizeof (int));
+            for (k=0;k<nrCols;k++) {
+                aggregates[i][j][k] = 0;
+            }
+        }
+    }
+
 
     clock_t begin, end;
     double time_spent;
     FILE *f = fopen("timing.csv", "w");
+
+    /* aggreagation array */
+
+
 
     /* Replicate the simulation replicateNb times. If replicateNb > 1 then the
     ** simulation's output names are "simulName1", "simulName2", etc... */
@@ -511,6 +529,9 @@ void mcMigrate (char **paramFile, int *nrFiles)
                             currentState[i][j] = loopID;
                             nrStepColonized++;
 
+                            //printf("Step: %d, i: %d, j: %d\n",dispStep-1, i, j);
+                            aggregates[dispStep-1][i][j]++;
+
                             /* If the pixel was in seed bank resilience state, then we
                             ** update the corresponding counter. Currently not used.
                             ** if (pixelAge[i][j] == 255) nrStepSeedBank--; */
@@ -705,6 +726,13 @@ void mcMigrate (char **paramFile, int *nrFiles)
 
     } /* end of "RepLoop" */
 
+    // write out aggregates file
+    sprintf(fileName, "%s/%s_agg1.asc", simulName, simulName2);
+    if (writeMat (fileName, aggregates[0]) == -1)
+    {
+        *nrFiles = -1;
+        goto End_of_Routine;
+    }
 
     /* Set the number of output files created. */
     *nrFiles = envChgSteps;
@@ -747,6 +775,16 @@ End_of_Routine:
     if (dispKernel != NULL) free(dispKernel);
     if (propaguleProd != NULL) free(propaguleProd);
 
+
+    if (aggregates != NULL) {
+        for (i = 0; i < dispSteps; i++) {
+            for (j = 0; j < nrRows; j++) {
+                free(aggregates[i][j]);
+            }
+            free(aggregates[i]);
+        }
+        free(aggregates);
+    }
 
     /* If an error occured, display failure message to the user... */
     if (*nrFiles == -1) printf("MigClim simulation aborted...\n");
