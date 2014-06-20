@@ -696,12 +696,12 @@ void mcMigrate (char **paramFile, int *nrFiles)
         }
 
         /* Write the final state matrix to file. */
-        sprintf(fileName, "%s/%s_raster.asc", simulName, simulName2);
+       /* sprintf(fileName, "%s/%s_raster.asc", simulName, simulName2);
         if (writeMat (fileName, currentState) == -1)
         {
             *nrFiles = -1;
             goto End_of_Routine;
-        }
+        }*/
 
         /* Write summary output to file. */
         simulTime = time (NULL) - startTime;
