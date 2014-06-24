@@ -34,7 +34,7 @@ class ModelManager():
 		
 
 	def __setupParamaterFile(self, settings):
-		newPath = Config.runPath + '/' + settings['id'] + '/params.txt'
+		newPath = Config.runPath + '/' + settings['id'] + '/mig_mic_curr/params.txt'
 		fInit = open (Config.paramsFilePath, "r")
 		fNew = open(newPath, "w")
 		fNew.write(fInit.read())
@@ -45,6 +45,9 @@ class ModelManager():
 		path = Config.runPath + '/'+str(id)
 		if not os.path.exists(path):
 			os.makedirs(path)
+			outputPath = path + '/mig_mic_curr'
+			if not os.path.exists(outputPath):
+				os.makedirs(outputPath)
 		else:
 			raise DirectoryExists
 
@@ -63,6 +66,7 @@ class ModelManager():
 		src = Config.initialFiles + '/mig'
 		migDest = dest + '/mig'
 		shutil.copyfile(src,migDest)
+		shutil.copystat(src,migDest)
 
 
 
