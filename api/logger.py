@@ -90,5 +90,4 @@ class Logger(Singleton):
         self.log(CRITICAL, str)
 
 
-#initialise self
 log = Logger()

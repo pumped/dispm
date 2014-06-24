@@ -1,7 +1,7 @@
 
 class Config():
 
-	rootPath = '/home/pumped/Development/phd/test/api'
+	rootPath = '/home/dylan/Dev/test/api'
 	initialFiles = rootPath + '/init'
 	runPath = rootPath + '/runs'
 

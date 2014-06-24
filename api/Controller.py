@@ -47,7 +47,7 @@ class Controller (threading.Thread):
 			else:
 				#do processing
 				log.info('Processed Job: ' + str(job))
-				self.model.runModel("1")
+				self.model.runModel(-1)
 
 			#exit if quit registered
 			if (self.quit):
