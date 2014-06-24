@@ -3,28 +3,39 @@
 
 import threading
 import Queue
-from Model import Model
+from Model import ModelManager
+from logger import *
 
 class Controller (threading.Thread):
 
 	state = {}
 	modelQueue = Queue.Queue()
-	model = Model()
+	model = ModelManager()
 	quit = False
 
 	#constructor
 	def __init__(self):
 		threading.Thread.__init__(self)
-		print 'Controller Initialised'
+		log.debug('Controller Initialised')
 
 	def __del__(self):
-		print 'Controller Terminated'
+		log.debug('Controller Terminated')
 
-	def getStatus():
+	#return the latest log messages
+	def getStatus(self):
 		return self.modelQueue.qsize()
 
+	#return the state of a specific paramater set
+	def getState(self,id):
+		pass
+
+	#add a new job to the queue
+	def addJob(self,job):
+		self.modelQueue.put(job)
+
+	#wait for jobs to become available and run them
 	def run(self):
-		print 'Control thread started'
+		log.debug('Control thread started')
 
 		while True:
 			#wait for queue items
@@ -34,11 +45,9 @@ class Controller (threading.Thread):
 				#no jobs
 				pass
 			else:
-				print job
-
 				#do processing
-				print 'Processed Job'
-				self.model.runTask(1)
+				log.info('Processed Job: ' + str(job))
+				self.model.runModel("1")
 
 			#exit if quit registered
 			if (self.quit):

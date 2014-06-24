@@ -194,7 +194,7 @@ int mcInit (char *paramFile)
       {
 	status = -1;
 	printf ("Dispersal kernel expected on line %d in parameter file %s\n",
-		 line, paramFile);
+		 lineNr, paramFile);
 	goto End_of_Routine;
       }
       dispKernel[0] = p;
@@ -204,7 +204,7 @@ int mcInit (char *paramFile)
 	{
 	  status = -1;
 	  printf ("Invalid dispersal kernel values on line %d in parameter file %s.\n",
-		   line, paramFile);
+		   lineNr, paramFile);
 	  goto End_of_Routine;
 	}
 	dispKernel[i] = p;

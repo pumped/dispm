@@ -1,15 +1,10 @@
 import os
 from logger import *
 from Config import Config
-from mat import MatrixManager
 
 class ModelManager():
-
-	matrices = None #matrix manager
-	matrixID = 0 #current matrix identifier
-
 	def __init__(self):
-		self.matrices = MatrixManager.MatrixManager(Config.rootPath)
+		pass
 
 	#run the model with a specific identifier
 	def runModel(self, id):
@@ -43,14 +38,16 @@ class ModelManager():
 	def __writeInputFiles(self, id):
 		pass
 
-from Dispm import Dispm
-
 class Model():
 
 	def __init__(self):
 		pass
 
 	def runTask(self,id):
+		#write out the params file
+
+		#determine a name for this run
+
 		#run the simulation
 		log.info('Running Modelling Task with ID: ' + str(id))
 
