@@ -127,3 +127,36 @@ class Matrix():
 
 	def getMatrix(self):
 		return self.matrix
+
+	def __init__(self, file=None):
+		if file is not None:
+			self.readASC(file)
+
+	def readASC(self, file):		
+		#read file
+		ascArray = numpy.loadtxt(file, skiprows=6)
+		self.matrix = numpy.matrix(ascArray)
+
+		#read header
+		with open(file, 'r') as f:
+			self.ncols = f.readline().split(' ')[-1].rstrip()
+			self.nrows = f.readline().split(' ')[-1].rstrip()
+			self.xllcorner = f.readline().split(' ')[-1].rstrip()
+			self.yllcorner = f.readline().split(' ')[-1].rstrip()
+			self.cellsize = f.readline().split(' ')[-1].rstrip()
+			self.nodataVal = f.readline().split(' ')[-1].rstrip()
+
+		return self.matrix
+
+	def writeASC(self, file):
+		#prepare header
+		#TODO: read xll yll cellsize from base file
+		header = "ncols %s\n" % self.matrix.shape[1]
+		header += "nrows %s\n" % self.matrix.shape[0]
+		header += "xllcorner %s\n" % self.xllcorner
+		header += "yllcorner %s\n" % self.yllcorner
+		header += "cellsize %s\n" % self.cellsize
+		header += "NODATA_value %s" % self.nodataVal
+		
+		#dump numpy matrix to file
+		numpy.savetxt(file, self.matrix, header=header, fmt="%1.2f", comments='')
