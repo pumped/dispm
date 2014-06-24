@@ -29,8 +29,9 @@ class ModelManager():
 		log.debug('Input files written')
 		self.__setupParamaterFile({'id':id})
 		log.debug('Paramater files written')
-		
-		
+
+		log.info('Model Kicked off')
+		#run model on dispy node
 		
 
 	def __setupParamaterFile(self, settings):

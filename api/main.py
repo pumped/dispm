@@ -8,10 +8,8 @@ if __name__ == "__main__":
 	#threaded
 	try:
 		controller = Controller()
-		log.info('a')
 		controller.start()
-		log.info('b')
-
+		
 		server = Server()
 		server.controller = controller
 

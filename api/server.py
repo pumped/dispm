@@ -59,6 +59,6 @@ class Server():
 	    return '{"error" : {"code" : 404, "string" : "Invalid Request"}}'
 
 	def run(self):
-		self._app.run(host=self._host, port=self._port)
+		self._app.run(host=self._host, port=self._port, quiet=True)
 		pass
 		#run(host='0.0.0.0', port=5566, debug=True)
