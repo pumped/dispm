@@ -3,6 +3,7 @@ from logger import *
 from Config import Config
 from mat import MatrixManager
 import shutil
+import dispy
 
 class ModelManager():
 
@@ -23,16 +24,33 @@ class ModelManager():
 			self.__setupDirectory(id)
 		except DirectoryExists:
 			log.info('directory '+str(id)+' already exists')
-			return 1 #mark as completed already
+			return 0 #mark as completed already
 
 		self.__writeInputFiles(id)
 		log.debug('Input files written')
 		self.__setupParamaterFile({'id':id})
 		log.debug('Paramater files written')
 
-		log.info('Model Kicked off')
 		#run model on dispy node
-		
+		#self.__runModelJob(id)
+
+		return 1
+
+
+	def __runModelJob(self, id):
+		log.info('Model Kicked off')
+		jobs = []
+		path = Config.runPath + '/' + id + '/mig'
+		print path
+		cluster = dispy.JobCluster(path)
+		for i in range(Config.repetitions):
+			job = cluster.submit(i);
+			job.id = i
+			jobs.append(job)
+
+		for job in jobs:
+			n = job()
+			log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
 
 	def __setupParamaterFile(self, settings):
 		newPath = Config.runPath + '/' + settings['id'] + '/mig_mic_curr/params.txt'
@@ -88,15 +106,6 @@ class Model():
 
 	def status(self):
 		return 'idle'
-
-class Tiler():
-
-	def __init__(self):
-		pass
-
-	def status(self):
-		return 'running'
-
 
 
 class DirectoryExists(Exception):

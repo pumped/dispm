@@ -1,8 +1,14 @@
 
 class Config():
 
-	rootPath = '/home/dylan/Dev/test/api'
+	#Paths
+	rootPath = '/home/pumped/Development/phd/test/api'
+	scratchPath = '/home/pumped/Development/phd/test/scratch'
 	initialFiles = rootPath + '/init'
-	runPath = rootPath + '/runs'
+	runPath = scratchPath + '/runs'
 
 	paramsFilePath = initialFiles + '/params.txt'
+
+
+	#Repetitions
+	repetitions = 2
