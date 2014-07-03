@@ -41,8 +41,9 @@ bool mcSinkCellCheck (pixel pix, int **curState, int **habSuit);
 **                files created. A value of -1 is returned if an error occurred.
 */
 
-void mcMigrate (char **paramFile, int *nrFiles)
+void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char const *outputDir)
 {
+    printf("Output directory: %s\n",outputDir);
     int     i, j, k, RepLoop, envChgStep, dispStep, loopID, simulTime,last;
     bool    advOutput, habIsSuitable, cellInDispDist, tempResilience, tail;
     char    fileName[128], simulName2[128];
@@ -326,7 +327,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
 
 
         /* Write the initial state to the data file. */
-        sprintf(fileName, "%s/%s_stats.txt", simulName, simulName2);
+        sprintf(fileName, "%s/%s_stats.txt", outputDir, simulName2);
         if ((fp = fopen (fileName, "w")) != NULL)
         {
             fprintf (fp, "envChgStep\tdispStep\tstepID\tunivDispersal\tNoDispersal\toccupied\tabsent\tstepColonized\tstepDecolonized\tstepLDDsuccess\n");
@@ -647,7 +648,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
                 /* If the user has requested full output, also write the current state matrix to file. */
                 if (fullOutput)
                 {
-                    sprintf (fileName, "%s/%s_step_%d.asc", simulName, simulName2, loopID);
+                    sprintf (fileName, "%s/%s_step_%d.asc", outputDir, simulName2, loopID);
                     if (writeMat (fileName, currentState) == -1)
                     {
                         *nrFiles = -1;
@@ -705,7 +706,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
 
         /* Write summary output to file. */
         simulTime = time (NULL) - startTime;
-        sprintf(fileName, "%s/%s_summary.txt", simulName, simulName2);
+        sprintf(fileName, "%s/%s_summary.txt", outputDir, simulName2);
         if ((fp2 = fopen (fileName, "w")) != NULL)
         {
             fprintf(fp2, "simulName\tiniCount\tnoDispCount\tunivDispCount\toccupiedCount\tabsentCount\ttotColonized\ttotDecolonized\ttotLDDsuccess\trunTime\n");
@@ -727,7 +728,7 @@ void mcMigrate (char **paramFile, int *nrFiles)
     } /* end of "RepLoop" */
 
     // write out aggregates file
-    sprintf(fileName, "%s/%s_agg1.asc", simulName, simulName2);
+    sprintf(fileName, "%s/%s_agg1.asc", outputDir, simulName2);
     if (writeMat (fileName, aggregates[0]) == -1)
     {
         *nrFiles = -1;

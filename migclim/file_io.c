@@ -19,7 +19,7 @@
 **   - Otherwise:               -1.
 */
 
-int mcInit (char *paramFile)
+int mcInit (char const *paramFile)
 {
   int    i, age, status, lineNr;
   char   line[1024], param[64];

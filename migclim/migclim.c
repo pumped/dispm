@@ -18,7 +18,7 @@ int main( int argc, char const *argv[] ) {
 
 		printf("Using %s\n", param);
 
-		mcMigrate(&param, &nrFiles);
+		mcMigrate(&param, &nrFiles, inputDirectory, outputDirectory);
 
 		return 0;
 

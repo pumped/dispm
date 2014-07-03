@@ -48,14 +48,14 @@ extern bool    useBarrier, fullOutput;
 /*
 ** Function prototypes.
 */
-void mcMigrate           (char **paramFile, int *nrFiles);
+void mcMigrate           (char const **paramFile, int *nrFiles, char const *inputDir, char const *outputDir);
 bool mcSrcCell           (int i, int j, int **curState, int **pxlAge,
 			  int loopID, int habSuit, int **barriers, bool tail);
 int  mcUnivDispCnt       (int **habSuit);
 void updateNoDispMat     (int **hsMat, int **noDispMat, int *noDispCount);
 void mcFilterMatrix      (int **inMatrix, int **filterMatrix, bool filterNoData, bool filterOnes, bool insertNoData);
 bool mcIntersectsBarrier (int snkX, int snkY, int srcX, int srcY, int **barriers);
-int  mcInit              (char *paramFile);
+int  mcInit              (char const *paramFile);
 int  readMat             (char *fName, int **mat);
 int  writeMat            (char *fName, int **mat);
 void genClust            (int *nrow, int *ncol, int *ncls, int *niter, int *thrs, char **suitBaseName,
