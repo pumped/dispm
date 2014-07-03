@@ -29,6 +29,9 @@ class Controller (threading.Thread):
 	def getState(self,id):
 		pass
 
+	def getCurrentState(self):
+		return {"ID":self.model.getCurrentID()}
+
 	#add a new job to the queue
 	def addJob(self,job):
 		self.modelQueue.put(job)

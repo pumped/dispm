@@ -17,7 +17,7 @@ class ModelManager():
 	def runModel(self, id):
 		#default id to current
 		if (id == -1):
-			id = self.matrices.checkIdentity((self.matrices.currentMatrix.matrix))
+			id = self.getCurrentID()
 			log.info('Identifier Defaulted to: ' + str(id))
 
 		try:
@@ -36,6 +36,11 @@ class ModelManager():
 
 		return 1
 
+	def getState(self,id):
+		pass
+
+	def getCurrentID(self):
+		return self.matrices.checkIdentity((self.matrices.currentMatrix.matrix))
 
 	def __runModelJob(self, id):
 		log.info('Model Kicked off')

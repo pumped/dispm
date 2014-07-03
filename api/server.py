@@ -47,7 +47,8 @@ class Server():
 	# /runModel
 	def runModel(self):
 		self.controller.modelQueue.put("test")
-		return "Modeller Started"
+		state = self.controller.getCurrentState()
+		return json.dumps(state)
 
 	# @route('/data/<filename>')
 	# def server_static(filename):
