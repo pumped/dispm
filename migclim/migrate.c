@@ -169,9 +169,6 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
         pixelAge[i] = (int *)malloc (nrCols * sizeof (int));
         noDispersal[i] = (int *)malloc (nrCols * sizeof (int));
     }
-
-    // Allocate memory for the aggregates and zero
-    printf("Dispersal Steps: %d\nNrRows: %d\nNrCols: %d\n", dispSteps, nrRows, nrCols);
     aggregates = (int ***)malloc (dispSteps * sizeof (int **));
     for (i=0; i<dispSteps;i++) {
         aggregates[i] = (int **)malloc (nrRows * sizeof (int *));
@@ -182,11 +179,12 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
             }
         }
     }
+    
 
 
     clock_t begin, end;
     double time_spent;
-    FILE *f = fopen("timing.csv", "w");
+    /*FILE *f = fopen("timing.csv", "w");
 
     /* aggreagation array */
 
@@ -658,7 +656,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
 
                 end = clock();
                 time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-                fprintf(f,"%lf\n",time_spent);
+                //fprintf(f,"%lf\n",time_spent);
                 printf("Step %d completed in %lf \n",dispStep,time_spent);
 
 
@@ -745,7 +743,7 @@ End_of_Routine:
     /* Close the data file. */
     if (fp != NULL) fclose (fp);
 
-    fclose(f);
+    //fclose(f);
 
     /* Free the allocated memory. */
     if (currentState != NULL)
