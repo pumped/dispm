@@ -44,6 +44,9 @@ extern double *dispKernel, *propaguleProd, lddFreq, xllCorner, yllCorner,
 extern char    iniDist[128], hsMap[128], simulName[128], barrier[128];
 extern bool    useBarrier, fullOutput;
 
+int ***aggregates;
+int *aggregates_data;
+int shmid2;
 
 /*
 ** Function prototypes.
@@ -62,6 +65,11 @@ void genClust            (int *nrow, int *ncol, int *ncls, int *niter, int *thrs
                           char **barrBaseName, char **outBaseName, char **initFile);
 void validate            (char **obsFileName, int *npts, char **simFileName, int *ncls, double *bestScore);
 int main 				 (int argc, char const *argv[]);
+
+void proc_wait();
+void indexAggregates();
+void deIndexAggregates();
+void zeroAggregates();
 
 
 #endif  /* _MIGCLIM_H_ */

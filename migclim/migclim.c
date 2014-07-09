@@ -5,23 +5,32 @@
 #include "barriers.c"
 #include "univ_disp.c"
 #include "src_cell.c"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
+
+#include <semaphore.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/shm.h>
 
 
 
-int NUMPROC = 1;
-int MAXPROC = 5;
+int NUMPROC = 4;
+int MAXPROC = 7;
 int procCount = 0;
 pid_t child_pid, wpid;
 int status = 0;
 int i;
 
-//int ***aggregates;
 
-void proc_wait();
+
+
 
 int main( int argc, char const *argv[] ) {    
 
@@ -38,30 +47,55 @@ int main( int argc, char const *argv[] ) {
     		return(0);
     	}
 
+    	//setup aggregates shared memory
+		shmid2 = shmget(IPC_PRIVATE, nrRows*nrCols*dispSteps * sizeof aggregates_data[0], IPC_CREAT | 0700);
+		aggregates_data = shmat(shmid2, NULL, 0); //attach for parent
+		shmctl (shmid2 , IPC_RMID , 0);
+
+		indexAggregates();
+		zeroAggregates();
+
+
 	    //start processes
-	    printf("parent_pid = %d\n", getpid());
 	    for (i = 0; i < NUMPROC; i++)
 	    {
 	        //start process
 	        procCount++;
 	        if ((child_pid = fork()) == 0) {
 	        	
+	        		//attach aggregates
+	        		aggregates_data = shmat(shmid2, NULL, 0);
+	        		indexAggregates();
 	        		/* run dispersal model */
 					mcMigrate(&param, &nrFiles, inputDirectory, outputDirectory);
-
+					deIndexAggregates();
 					return(0);				
 	        }
 
 	        /* wait for child processes to return if over process limit */
-	        proc_wait();	        
+	        proc_wait();
+	        sleep(0.1);        
 	    }
 
 	    /* Wait for remaining processes to finish */
 	    while ((wpid = wait(&status)) > 0)
 	    {
-	        printf("Exit status of %d was %d (%s)\n", (int)wpid, status,
-	               (status > 0) ? "failed" : "success");
+	        if (status != 0) {
+	        	printf("Exit status of %d was %d (%s)\n", (int)wpid, status,
+	            	   (status > 0) ? "failed" : "success");
+	    	}	
 	    }
+
+
+	    /* write out aggregates */
+	    char    fileName[128];
+	    for (i=0; i<dispSteps;i++) {
+		    sprintf(fileName, "%s/agg%i.asc", outputDirectory,i);
+		    writeMat(fileName, aggregates[i]);
+		}
+
+	    deIndexAggregates();
+	    
 
 	/* Bad command line arguments */
     } else {
@@ -73,22 +107,38 @@ int main( int argc, char const *argv[] ) {
 	return(1);
 }
 
-/*void setupAggregates() {
+void indexAggregates() {
+	/* Index Aggregates for easier access */
 	int i,j,k;
-	// Allocate memory for the aggregates and zero
-    printf("Dispersal Steps: %d\nNrRows: %d\nNrCols: %d\n", dispSteps, nrRows, nrCols);
-    aggregates = (int ***)malloc (dispSteps * sizeof (int **));
-    for (i=0; i<dispSteps;i++) {
-        aggregates[i] = (int **)malloc (nrRows * sizeof (int *));
-        for (j=0;j<nrRows;j++) {
-            aggregates[i][j] = (int *)malloc (nrCols * sizeof (int));
-            for (k=0;k<nrCols;k++) {
-                aggregates[i][j][k] = 0;
-            }
-        }
-    }
-}*/
+    aggregates = (int***)malloc(dispSteps * sizeof(int**));
+	for (i=0; i < dispSteps; i++) {
+		aggregates[i] = (int**)malloc(nrRows * sizeof(int*));
+		for (j=0; j < nrRows; j++) {
+			aggregates[i][j] =  (int*)(aggregates_data + (i * nrRows * nrCols) + (j * nrCols));
+		}
+	}
+}
 
+void zeroAggregates() {
+	int i,j,k;
+	for (i=0; i < dispSteps; i++) {
+		for (j=0; j < nrRows; j++) {
+			for (k=0; k < nrCols; k++) {
+				aggregates[i][j][k] = 0;
+			}
+		}
+	}
+}
+
+void deIndexAggregates() {
+	int i,j;
+	if (aggregates != NULL) {
+        for (i = 0; i < dispSteps; i++) {
+            free(aggregates[i]);
+        }
+        free(aggregates);
+    }
+}
 
 void proc_wait() {
     /* If at process limit, wait for other processes to finish */

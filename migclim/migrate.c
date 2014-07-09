@@ -43,7 +43,6 @@ bool mcSinkCellCheck (pixel pix, int **curState, int **habSuit);
 
 void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char const *outputDir)
 {
-    printf("Output directory: %s\n",outputDir);
     int     i, j, k, RepLoop, envChgStep, dispStep, loopID, simulTime,last;
     bool    advOutput, habIsSuitable, cellInDispDist, tempResilience, tail;
     char    fileName[128], simulName2[128];
@@ -134,7 +133,6 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
     **   - noDispersal:    Values in [0;255].
     */
     int **currentState, **habSuitability, **barriers, **pixelAge, **noDispersal;
-    int ***aggregates;
 
 
     /* Initialize the variables. */
@@ -168,16 +166,6 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
         barriers[i] = (int *)malloc (nrCols * sizeof (int));
         pixelAge[i] = (int *)malloc (nrCols * sizeof (int));
         noDispersal[i] = (int *)malloc (nrCols * sizeof (int));
-    }
-    aggregates = (int ***)malloc (dispSteps * sizeof (int **));
-    for (i=0; i<dispSteps;i++) {
-        aggregates[i] = (int **)malloc (nrRows * sizeof (int *));
-        for (j=0;j<nrRows;j++) {
-            aggregates[i][j] = (int *)malloc (nrCols * sizeof (int));
-            for (k=0;k<nrCols;k++) {
-                aggregates[i][j][k] = 0;
-            }
-        }
     }
     
 
@@ -726,12 +714,12 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
     } /* end of "RepLoop" */
 
     // write out aggregates file
-    sprintf(fileName, "%s/%s_agg1.asc", outputDir, simulName2);
+   /* sprintf(fileName, "%s/%s_agg1.asc", outputDir, simulName2);
     if (writeMat (fileName, aggregates[0]) == -1)
     {
         *nrFiles = -1;
         goto End_of_Routine;
-    }
+    }*/
 
     /* Set the number of output files created. */
     *nrFiles = envChgSteps;
@@ -774,16 +762,6 @@ End_of_Routine:
     if (dispKernel != NULL) free(dispKernel);
     if (propaguleProd != NULL) free(propaguleProd);
 
-
-    if (aggregates != NULL) {
-        for (i = 0; i < dispSteps; i++) {
-            for (j = 0; j < nrRows; j++) {
-                free(aggregates[i][j]);
-            }
-            free(aggregates[i]);
-        }
-        free(aggregates);
-    }
 
     /* If an error occured, display failure message to the user... */
     if (*nrFiles == -1) printf("MigClim simulation aborted...\n");
