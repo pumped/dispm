@@ -484,6 +484,10 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                         **    pixel). */
                         if ((habSuitability[i][j] > 0) && (currentState[i][j] <= 0)) habIsSuitable = true;
 
+                        if (currentState[i][j] >= 1) {
+                            aggregates[dispStep-1][i][j]++;
+                        }
+
                         /* 2. Test whether there is a source cell within the dispersal
                         **    distance. To be more time efficient, this code runs only if
                         **    the answer to the first question is positive. Additionally,
