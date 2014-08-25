@@ -50,7 +50,13 @@ class Controller (threading.Thread):
 			else:
 				#do processing
 				log.info('Processed Job: ' + str(job))
-				self.model.runModel(-1)
+				status = self.model.runModel(-1)
+
+				if (status):
+					log.info('model run completed successfully')
+				else:
+					log.info('model run failed')
+
 
 			#exit if quit registered
 			if (self.quit):

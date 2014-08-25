@@ -32,7 +32,7 @@ class ModelManager():
 		log.debug('Paramater files written')
 
 		#run model on dispy node
-		#self.__runModelJob(id)
+		self.__runModelJob(id)
 
 		return 1
 
@@ -45,20 +45,20 @@ class ModelManager():
 	def __runModelJob(self, id):
 		log.info('Model Kicked off')
 		jobs = []
-		path = Config.runPath + '/' + id + '/mig'
-		print path
-		cluster = dispy.JobCluster(path)
-		for i in range(Config.repetitions):
-			job = cluster.submit(i);
-			job.id = i
-			jobs.append(job)
+		path = Config.runPath + '/' + id
+		outputPath = path + Config.aggregatesPath
+		inputPath = path + '/'
+		paramPath = path + '/params.txt'
+		#print path
+		cluster = dispy.JobCluster(Config.migExecutable)
 
-		for job in jobs:
-			n = job()
-			log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
+		job = cluster.submit(paramPath, inputPath, outputPath);
+		n = job()
+		log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
+		log.info(job.stdout)
 
 	def __setupParamaterFile(self, settings):
-		newPath = Config.runPath + '/' + settings['id'] + '/mig_mic_curr/params.txt'
+		newPath = Config.runPath + '/' + settings['id'] + '/params.txt'
 		fInit = open (Config.paramsFilePath, "r")
 		fNew = open(newPath, "w")
 		fNew.write(fInit.read())
@@ -69,7 +69,7 @@ class ModelManager():
 		path = Config.runPath + '/'+str(id)
 		if not os.path.exists(path):
 			os.makedirs(path)
-			outputPath = path + '/mig_mic_curr'
+			outputPath = path + Config.aggregatesPath
 			if not os.path.exists(outputPath):
 				os.makedirs(outputPath)
 		else:
@@ -87,10 +87,10 @@ class ModelManager():
 		shutil.copyfile(src,dmDest)
 
 		#copy mig over
-		src = Config.initialFiles + '/mig'
-		migDest = dest + '/mig'
-		shutil.copyfile(src,migDest)
-		shutil.copystat(src,migDest)
+		# src = Config.initialFiles + '/mig'
+		# migDest = dest + '/mig'
+		# shutil.copyfile(src,migDest)
+		# shutil.copystat(src,migDest)
 
 
 
