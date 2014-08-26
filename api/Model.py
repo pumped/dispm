@@ -24,7 +24,8 @@ class ModelManager():
 			self.__setupDirectory(id)
 		except DirectoryExists:
 			log.info('directory '+str(id)+' already exists')
-			return 0 #mark as completed already
+			if not Config.debug:
+				return 0 #mark as completed already
 
 		self.__writeInputFiles(id)
 		log.debug('Input files written')
@@ -35,6 +36,9 @@ class ModelManager():
 		self.__runModelJob(id)
 
 		return 1
+
+	def setMatrix(self, id):
+		self.matrixID = id
 
 	def getState(self,id):
 		pass

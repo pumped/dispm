@@ -1,5 +1,6 @@
 from bottle import Bottle, static_file, route, run
 from logger import *
+from Config import Config
 import json
 
 
@@ -14,6 +15,7 @@ class Server():
 
 	def _route(self):
 		self._app.route('/',callback=self.default)
+		self._app.route('/getTimeline',callback=self.getTimeline)
 		self._app.route('/status',callback=self.status)
 		self._app.route('/set/<project>',callback=self.setData)
 		self._app.route('/setPU/<project>/<id>/<value>',callback=self.setPU)
@@ -25,12 +27,17 @@ class Server():
 	    return static_file('index.html', root='data/web/')
 
 	# /status
-	def status(self,):
+	def status(self):
 		logs = log.getLiveLog()
 		modelStatus = "Not Running"
 		stats = json.dumps({"modelStatus":modelStatus,"logs":logs}, sort_keys=True, indent=4, separators=(',', ': '))
 		#stats += "Queue: " + self.controller.getStatus() +"\n"
 		return stats
+
+	# /set/timeline
+	def setTimeline(self, id):
+		self.controller.model.setMatrix(id)
+		return "Timeline set"
 
 	# /set/<project>
 	def setData(self, project="Demo"):
@@ -49,6 +56,10 @@ class Server():
 		self.controller.modelQueue.put("test")
 		state = self.controller.getCurrentState()
 		return json.dumps(state)
+
+	# /getParents
+	def getTimeline(self):
+		return static_file('parents.json', Config.initialFiles)
 
 	# @route('/data/<filename>')
 	# def server_static(filename):
