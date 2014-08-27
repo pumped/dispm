@@ -21,8 +21,8 @@
 
 
 
-int NUMPROC = 4;
-int MAXPROC = 7;
+int NUMPROC = 2;
+int MAXPROC = 2;
 int procCount = 0;
 pid_t child_pid, wpid;
 int status = 0;
@@ -55,6 +55,7 @@ int main( int argc, char const *argv[] ) {
 		indexAggregates();
 		zeroAggregates();
 
+		printf("Created aggregate memory");
 
 	    //start processes
 	    for (i = 0; i < NUMPROC; i++)
@@ -90,6 +91,12 @@ int main( int argc, char const *argv[] ) {
 	    /* write out aggregates */
 	    char    fileName[128];
 	    for (i=0; i<dispSteps;i++) {
+			nrCols = 5045;
+			nrRows = 3084;
+			xllCorner = 143.916567517;
+			yllCorner = -20.02510726;
+			cellSize = 0.001;
+			noData = -9999;
 		    sprintf(fileName, "%s/agg%i.asc", outputDirectory,i);
 		    writeMat(fileName, aggregates[i]);
 		}
