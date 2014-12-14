@@ -2,12 +2,14 @@ from MatrixManager import *
 import unittest
 import numpy
 import os
+from Config import Config
 
 class Matrix_test(unittest.TestCase):
 	def setUp(self):
 		pass
 
 	def testRead(self):
+		return
 		#write test file
 		matrix = numpy.matrix("1,2,3;4,5,6;7,8,9")
 
@@ -30,9 +32,8 @@ class Matrix_test(unittest.TestCase):
 		os.remove(file)
 
 	def testOther(self):		
-		m = MatrixManager("/home/pumped/Development/phd/test/api")
-		mat = m.readASC('/home/pumped/Development/phd/test/api/runs/asd88348asd/max_pre1.asc')
-		m.writeASC(mat, '/home/pumped/Development/phd/test/api/runs/asd88348asd/max_pre3.asc')
+		m = MatrixManager(Config)
+		print m.checkIdentity()
 
 
 

@@ -2,6 +2,7 @@ import numpy
 import hashlib
 from collections import OrderedDict
 import csv
+import subprocess
 
 class MatrixManager():
 
@@ -13,34 +14,44 @@ class MatrixManager():
 
 	currentMatrix = None
 
-	def __init__(self, rootPath = ''):
+	def __init__(self, config=None):
 		#read in parent dictionary
-		self.rootPath = rootPath
-		self.runPath = rootPath + '/runs'
+		self.config = config
+		#self.rootPath = rootPath
+		#self.runPath = rootPath + '/runs'
 		self.__readParentDict()
-		self.__readInitialMatrix()
+		#self.__readInitialMatrix()
 		#log.info('Loaded Initial Matrix')
+		self.identity = ''
 
-	def __readInitialMatrix(self):
-		#read path from config
-		path = self.rootPath + '/init/max_pre1.asc'
-		m = Matrix(path)
-		id = self.checkIdentity(m.matrix)
-		m.parent = None
-		self.currentMatrix = m
-		self.__addHS(id, m) #cache
+	def checkIdentity(self, force=False):
+		if force:
+			self.updateCurrentMatrix()
+			self.identity = self.hashfile(open(self.config.hsFile),hashlib.md5())		
+		return self.identity 
 
-	def checkIdentity(self, mat):
-		return hashlib.sha1(mat).hexdigest()
+	def hashfile(self, afile, hasher, blocksize=65536):
+	    buf = afile.read(blocksize)
+	    while len(buf) > 0:
+	        hasher.update(buf)
+	        buf = afile.read(blocksize)
+	    return hasher.hexdigest()
 
-	#creates new matrice based of the matrice specified
-	def createNew(self, parentID):
-		self.currentMatrix = Matrix()
-		self.currentMatrix.parent = parentID
+	#loads management actions and writes out hs matrix
+	def updateCurrentMatrix(self):
+		#load changes
+		self.modifyHS(self.config.hsFile,self.config.initHS,self.config.currentFiles+"/HS.tif")
 
-		#initialise matrix to parent matrix
-		parent = getHS()
-		self.currentMatrix.matrix = parent.matrix
+	
+	def modifyHS(self,outputFile="HS.asc", inputFile="./max_pre1.asc", tempOutputFile = "HS.tif"):	
+		
+		#extract and modify hs
+		cmd = ["gdalwarp -wo 'INIT_DEST=0' "+inputFile+" "+tempOutputFile+" -cutline \"PG:dbname=nyc user='postgres' password='postgres'\" -csql 'SELECT * from nyc_buildings'"]	
+		subprocess.call(cmd, shell=True)
+
+		#convert output
+		cmd = ["gdal_translate -of AAIGrid "+tempOutputFile+" "+outputFile]
+		subprocess.call(cmd, shell=True)
 
 	#modify matrix
 	def setCell(self, coordinates, value):
@@ -80,7 +91,7 @@ class MatrixManager():
 
 	def __readParentDict(self):
 		#read parent dictionaries in
-		f = self.rootPath + "/parents.csv"
+		f = self.config.rootPath + "/parents.csv"
 		for key, val in csv.reader(open(f)):
 			self.parentDict[key] = val
 	

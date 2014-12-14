@@ -11,13 +11,13 @@ class ModelManager():
 	matrixID = 0 #current matrix identifier
 
 	def __init__(self):
-		self.matrices = MatrixManager.MatrixManager(Config.rootPath)
+		self.matrices = MatrixManager.MatrixManager(Config)
 
 	#run the model with a specific identifier
 	def runModel(self, id):
-		#default id to current
+		#default id to current if non existant
 		if (id == -1):
-			id = self.getCurrentID()
+			id = self.getCurrentID(True)
 			log.info('Identifier Defaulted to: ' + str(id))
 
 		try:
@@ -43,8 +43,8 @@ class ModelManager():
 	def getState(self,id):
 		pass
 
-	def getCurrentID(self):
-		return self.matrices.checkIdentity((self.matrices.currentMatrix.matrix))
+	def getCurrentID(self, force=False):
+		return self.matrices.checkIdentity(force)
 
 	def __runModelJob(self, id):
 		log.info('Model Kicked off')
@@ -53,7 +53,10 @@ class ModelManager():
 		outputPath = path + Config.aggregatesPath
 		inputPath = path + '/'
 		paramPath = path + '/params.txt'
-		#print path
+		
+		print path
+		print paramPath, inputPath, outputPath
+
 		cluster = dispy.JobCluster(Config.migExecutable)
 
 		job = cluster.submit(paramPath, inputPath, outputPath);
@@ -82,8 +85,10 @@ class ModelManager():
 	def __writeInputFiles(self, id):
 		dest = Config.runPath + '/' + str(id)
 		
-		#write habitat suitability
-		self.matrices.currentMatrix.writeASC(dest + '/max_pre1.asc')
+		#copy hs to folder
+		src = Config.hsFile
+		dmDest = dest + '/max_pre1.asc'
+		shutil.copyfile(src,dmDest)
 		
 		#copy initial distribution map over
 		src = Config.initialFiles + '/dist_p.asc'
