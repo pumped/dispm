@@ -200,7 +200,8 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
         /* Load and prepare the data. */
 
         /* Species initial distribution */
-        sprintf(fileName, "%s.asc", iniDist);                        /* sprinf(): puts a string into variable fileName */
+        sprintf(fileName, "%s%s.asc", inputDir, iniDist);                        /* sprinf(): puts a string into variable fileName */
+        printf("%s", fileName);
         if (readMat(fileName, currentState) == -1)
         {
             *nrFiles = -1;
@@ -342,7 +343,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
             printf ("  %d...\n", envChgStep);
 
             /* Load the habitat suitability layer for the current envChgStep. */
-            sprintf (fileName, "%s%d.asc", hsMap, envChgStep);
+            sprintf (fileName, "%s%s%d.asc", inputDir, hsMap, envChgStep);
             if (readMat (fileName, habSuitability) == -1)
             {
                 *nrFiles = -1;

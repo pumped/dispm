@@ -40,12 +40,13 @@ int main( int argc, char const *argv[] ) {
 		char const *inputDirectory = argv[2];
 		char const *outputDirectory = argv[3];
 		int nrFiles = 12;
-		printf("Using %s\n", param);
 
 		//read paramater file
     	if (mcInit(param) == -1) {
     		return(0);
     	}
+
+    	printf("Allocating Memory \n");
 
     	//setup aggregates shared memory
 		shmid2 = shmget(IPC_PRIVATE, nrRows*nrCols*dispSteps * sizeof aggregates_data[0], IPC_CREAT | 0700);
@@ -54,8 +55,6 @@ int main( int argc, char const *argv[] ) {
 
 		indexAggregates();
 		zeroAggregates();
-
-		printf("Created aggregate memory");
 
 	    //start processes
 	    for (i = 0; i < NUMPROC; i++)
