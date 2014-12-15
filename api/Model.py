@@ -53,9 +53,6 @@ class ModelManager():
 		outputPath = path + Config.aggregatesPath
 		inputPath = path + '/'
 		paramPath = path + '/params.txt'
-		
-		print path
-		print paramPath, inputPath, outputPath
 
 		cluster = dispy.JobCluster(Config.migExecutable)
 
