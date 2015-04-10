@@ -53,7 +53,7 @@ int shmid2;
 */
 void mcMigrate           (char const **paramFile, int *nrFiles, char const *inputDir, char const *outputDir);
 bool mcSrcCell           (int i, int j, int **curState, int **pxlAge,
-			  int loopID, int habSuit, int **barriers, bool tail);
+			  int loopID, int habSuit, int **barriers, int *last);
 int  mcUnivDispCnt       (int **habSuit);
 void updateNoDispMat     (int **hsMat, int **noDispMat, int *noDispCount);
 void mcFilterMatrix      (int **inMatrix, int **filterMatrix, bool filterNoData, bool filterOnes, bool insertNoData);

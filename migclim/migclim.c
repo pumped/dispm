@@ -21,8 +21,8 @@
 
 
 
-int NUMPROC = 2;
-int MAXPROC = 2;
+int NUMPROC = 20;
+int MAXPROC = 3;
 int procCount = 0;
 pid_t child_pid, wpid;
 int status = 0;
@@ -55,6 +55,7 @@ int main( int argc, char const *argv[] ) {
 
 		indexAggregates();
 		zeroAggregates();
+		printf("Zeroed \n");
 
 	    //start processes
 	    for (i = 0; i < NUMPROC; i++)
@@ -74,7 +75,7 @@ int main( int argc, char const *argv[] ) {
 
 	        /* wait for child processes to return if over process limit */
 	        proc_wait();
-	        sleep(0.1);        
+	        sleep(5);        
 	    }
 
 	    /* Wait for remaining processes to finish */
