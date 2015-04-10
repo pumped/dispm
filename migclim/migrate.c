@@ -473,6 +473,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 ** Loop through the cellular automaton. */
                 for (i = 0; i < nrRows; i++)
                 {
+                    last = 0;
                     for (j = 0; j < nrCols; j++)
                     {
 
@@ -499,17 +500,12 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                         **    function). */
                         if (habIsSuitable)
                         {
-                            if (last > 5) {  //we don't want to do a full search if it isn't necessary.
-                                tail = false;
-                            } else { //we need to search the tail as well
-                                tail = true;
-                            }
                             /* Now we search if there is a suitable source cell to colonize the sink cell. */
-                            if (mcSrcCell (i, j, currentState, pixelAge, loopID, habSuitability[i][j], barriers, tail)) {
+                            if (mcSrcCell (i, j, currentState, pixelAge, loopID, habSuitability[i][j], barriers, &last)) {
                                 cellInDispDist = true;
-                                last=0;  
+                                //last=0;  
                             } else {
-                                last++;
+                                //last++;
                             }
                         }
 

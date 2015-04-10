@@ -7,6 +7,7 @@
 */
 
 #include "migclim.h"
+#include <unistd.h>
 
 
 /*
@@ -32,11 +33,11 @@
 */
 
 bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
-		int habSuit, int **barriers, bool tail)
+		int habSuit, int **barriers, int *last)
 {
   int    k, l, realDist, pxlSizeFactor,kDispDist;
   double probCol, rnd;
-  bool   sourceFound;
+  bool   sourceFound, anySource;
 
   /*
   ** For now let's set these paramters to fixed values. Later we can implement
@@ -44,25 +45,36 @@ bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
   */
   pxlSizeFactor = 1;
   sourceFound = false;
+  anySource = false;
         
   /*
   ** Search for a potential source cell. i and j are the coordinates of the
   ** sink cell. k and l are the coordinates of the potential source cell.
   */
 
-  if (!tail) {
-  	//printf("short");
+  if ((*last) > dispDist) {
+	//printf("short i %i, j %i \n",i,j);
   	kDispDist = -dispDist;
+  	//sleep(1);
   } else {
+  	//printf("full i %i, j %i \n",i,j);
+  	//printf("last: %i", *last);
   	kDispDist = dispDist;
+  	//sleep(1);
   	//printf("full");
   }
 
 
-  for (k = i - dispDist; k <= i + dispDist; k++)
+  for (k = i - dispDist; k <= (i + dispDist); k++)
   {
-    for (l = j - kDispDist; l <= j + dispDist; l++)
+  	/*if (*last > dispDist) {
+	  	printf("l %i, j %i, dist %i, k %i, kDisp %i \n",l,j,dispDist,k,kDispDist);
+	}*/
+    for (l = j - kDispDist; l <= (j + dispDist); l++)
     {
+    	/*if (*last > dispDist) {
+		  	printf("k %i, l %i \n",k,l);
+		}*/
       /*
       ** 1. Test of basic conditions to see if a pixel could be a potential
       **    source cell:
@@ -78,6 +90,7 @@ bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
 	{
 	  if (pxlAge[k][l] >= iniMatAge)
 	  {
+	  		anySource = true;
 	    /*
 	    ** 2. Compute the distance between sink and (potential) source pixel
 	    **    and check if it is <= maximum dispersal distance. The distance
@@ -140,6 +153,11 @@ bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
   /*
   ** Return the result.
   */
+  if (!anySource) {
+  	(*last)++;
+  } else {
+  	(*last) = 0;
+  }
   return (sourceFound);
 }
 

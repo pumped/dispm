@@ -21,8 +21,8 @@
 
 
 
-int NUMPROC = 2;
-int MAXPROC = 2;
+int NUMPROC = 20;
+int MAXPROC = 3;
 int procCount = 0;
 pid_t child_pid, wpid;
 int status = 0;
@@ -55,6 +55,7 @@ int main( int argc, char const *argv[] ) {
 
 		indexAggregates();
 		zeroAggregates();
+		printf("Zeroed \n");
 
 	    //start processes
 	    for (i = 0; i < NUMPROC; i++)
@@ -74,7 +75,7 @@ int main( int argc, char const *argv[] ) {
 
 	        /* wait for child processes to return if over process limit */
 	        proc_wait();
-	        sleep(0.1);        
+	        sleep(5);        
 	    }
 
 	    /* Wait for remaining processes to finish */
@@ -90,8 +91,8 @@ int main( int argc, char const *argv[] ) {
 	    /* write out aggregates */
 	    char    fileName[128];
 	    for (i=0; i<dispSteps;i++) {
-			nrCols = 5045;
-			nrRows = 3084;
+			nrCols = 3084;
+			nrRows = 5045;
 			xllCorner = 143.916567517;
 			yllCorner = -20.02510726;
 			cellSize = 0.001;
