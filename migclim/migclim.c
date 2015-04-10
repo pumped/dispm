@@ -90,8 +90,8 @@ int main( int argc, char const *argv[] ) {
 	    /* write out aggregates */
 	    char    fileName[128];
 	    for (i=0; i<dispSteps;i++) {
-			nrCols = 5045;
-			nrRows = 3084;
+			nrCols = 3084;
+			nrRows = 5045;
 			xllCorner = 143.916567517;
 			yllCorner = -20.02510726;
 			cellSize = 0.001;
