@@ -21,7 +21,7 @@
 
 
 
-int NUMPROC = 20;
+int NUMPROC = 3;
 int MAXPROC = 3;
 int procCount = 0;
 pid_t child_pid, wpid;
@@ -62,8 +62,8 @@ int main( int argc, char const *argv[] ) {
 	    {
 	        //start process
 	        procCount++;
-	        if ((child_pid = fork()) == 0) {
-	        	
+	        if ((child_pid = fork()) == 0) { // child process
+	        		
 	        		//attach aggregates
 	        		aggregates_data = shmat(shmid2, NULL, 0);
 	        		indexAggregates();
@@ -75,7 +75,7 @@ int main( int argc, char const *argv[] ) {
 
 	        /* wait for child processes to return if over process limit */
 	        proc_wait();
-	        sleep(5);        
+	        sleep(1);        
 	    }
 
 	    /* Wait for remaining processes to finish */
@@ -86,19 +86,14 @@ int main( int argc, char const *argv[] ) {
 	            	   (status > 0) ? "failed" : "success");
 	    	}	
 	    }
+ 
+
 
 
 	    /* write out aggregates */
-	    char    fileName[128];
+	    
 	    for (i=0; i<dispSteps;i++) {
-			nrCols = 3084;
-			nrRows = 5045;
-			xllCorner = 143.916567517;
-			yllCorner = -20.02510726;
-			cellSize = 0.001;
-			noData = -9999;
-		    sprintf(fileName, "%s/agg%i.asc", outputDirectory,i);
-		    writeMat(fileName, aggregates[i]);
+	    	writeAggregateFile(i, outputDirectory);
 		}
 
 	    deIndexAggregates();
@@ -112,6 +107,22 @@ int main( int argc, char const *argv[] ) {
 	}
 
 	return(1);
+}
+
+void writeAggregateFile(int i, char const *outputDirectory) {
+	char    fileName[128];
+	double time_spent;
+	clock_t start = clock();
+	nrCols = 3084;
+	nrRows = 5045;
+	xllCorner = 143.916567517;
+	yllCorner = -20.02510726;
+	cellSize = 0.001;
+	noData = -9999;
+    sprintf(fileName, "%s/agg%i.asc", outputDirectory,i);
+    writeMat(fileName, aggregates[i]);
+    time_spent = (double)(clock() - start) / CLOCKS_PER_SEC;
+    printf("Write %i : %lf \n",i,time_spent);
 }
 
 void indexAggregates() {

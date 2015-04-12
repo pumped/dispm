@@ -66,6 +66,8 @@ void genClust            (int *nrow, int *ncol, int *ncls, int *niter, int *thrs
 void validate            (char **obsFileName, int *npts, char **simFileName, int *ncls, double *bestScore);
 int main 				 (int argc, char const *argv[]);
 
+void writeAggregateFile	 (int i, char const *outputDirectory);
+
 void proc_wait();
 void indexAggregates();
 void deIndexAggregates();
