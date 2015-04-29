@@ -67,6 +67,9 @@ void validate            (char **obsFileName, int *npts, char **simFileName, int
 int main 				 (int argc, char const *argv[]);
 
 void writeAggregateFile	 (int i, char const *outputDirectory);
+void writeLock			 (char const *lockPath);
+
+void deleteLock			 (char const *lockPath);
 
 void proc_wait();
 void indexAggregates();

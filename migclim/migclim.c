@@ -111,18 +111,48 @@ int main( int argc, char const *argv[] ) {
 
 void writeAggregateFile(int i, char const *outputDirectory) {
 	char    fileName[128];
+	char	fileLCKName[128];
 	double time_spent;
 	clock_t start = clock();
+	
+	//setup data headers
 	nrCols = 3084;
 	nrRows = 5045;
 	xllCorner = 143.916567517;
 	yllCorner = -20.02510726;
 	cellSize = 0.001;
 	noData = -9999;
+    
+
     sprintf(fileName, "%s/agg%i.asc", outputDirectory,i);
+    sprintf(fileLCKName, "%s.LCK",fileName);
+    
+    //write lock
+    writeLock(fileLCKName);
+
+    //write matrix
     writeMat(fileName, aggregates[i]);
+    
+    //remove lock
+    deleteLock(fileLCKName);
+
     time_spent = (double)(clock() - start) / CLOCKS_PER_SEC;
     printf("Write %i : %lf \n",i,time_spent);
+}
+
+void writeLock(char const *lockPath) {
+	FILE *fp;
+	if ((fp = fopen(lockPath,"w")) == NULL) {
+		printf("can't open lock file");
+	}
+	fprintf(fp,"l");
+	fclose(fp);
+}
+
+void deleteLock(char const *lockPath) {
+	if (unlink(lockPath) == -1) {
+		printf("failed to delete lock %s\n",lockPath);
+	}
 }
 
 void indexAggregates() {
