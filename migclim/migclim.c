@@ -53,6 +53,10 @@ int main( int argc, char const *argv[] ) {
 		aggregates_data = shmat(shmid2, NULL, 0); //attach for parent
 		shmctl (shmid2 , IPC_RMID , 0);
 
+		//setup write tracker
+		setupStepCompleteArray();
+
+
 		indexAggregates();
 		zeroAggregates();
 		printf("Zeroed \n");
@@ -86,17 +90,15 @@ int main( int argc, char const *argv[] ) {
 	            	   (status > 0) ? "failed" : "success");
 	    	}	
 	    }
- 
 
-
-
-	    /* write out aggregates */
-	    
+	    /* write out aggregates */	    
 	    for (i=0; i<dispSteps;i++) {
 	    	writeAggregateFile(i, outputDirectory);
 		}
 
+		//cleanup
 	    deIndexAggregates();
+	    cleanupStepCompleteArray();
 	    
 
 	/* Bad command line arguments */
@@ -153,6 +155,34 @@ void deleteLock(char const *lockPath) {
 	if (unlink(lockPath) == -1) {
 		printf("failed to delete lock %s\n",lockPath);
 	}
+}
+
+void setupStepCompleteArray() {
+	//create semaphore and shared memory
+    stepComplete_shmkey = ftok ("/dev/null", 5);
+    stepComplete_shmid = shmget (stepComplete_shmkey, dispSteps*sizeof (int), 0644 | IPC_CREAT);
+    if (stepComplete_shmid < 0){  perror ("shmget\n"); exit (1); } //exit on error
+    stepComplete = (int *) shmat (stepComplete_shmid, 0, 0);   /* attach p to shared memory */
+
+    //open sem and set auto unlink
+    stepCompleteLock = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
+    sem_unlink ("pSem"); 
+}
+
+void cleanupStepCompleteArray() {
+		/* shared memory detach */
+        shmdt ((void *) stepComplete);
+        shmctl (stepComplete_shmid, IPC_RMID, 0);
+
+        /* cleanup semaphores */
+        sem_destroy (stepCompleteLock);
+}
+
+void incrementStepComplete(int i) {
+	sem_wait(stepCompleteLock);
+    stepComplete[i] += 1;
+    printf ("Step Incremented: %d",i);
+    sem_post(stepCompleteLock);
 }
 
 void indexAggregates() {

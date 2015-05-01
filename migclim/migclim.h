@@ -16,6 +16,11 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <sys/types.h>      /* key_t, sem_t, pid_t      */
+#include <sys/shm.h>        /* shmat(), IPC_RMID        */
+#include <semaphore.h>      /* sem_open(), sem_destroy(), sem_wait().. */
+#include <fcntl.h>  
+
 
 
 /*
@@ -48,6 +53,11 @@ int ***aggregates;
 int *aggregates_data;
 int shmid2;
 
+key_t stepComplete_shmkey; 
+int stepComplete_shmid; 
+sem_t *stepCompleteLock;
+int *stepComplete;
+
 /*
 ** Function prototypes.
 */
@@ -75,6 +85,11 @@ void proc_wait();
 void indexAggregates();
 void deIndexAggregates();
 void zeroAggregates();
+
+
+void setupStepCompleteArray();
+void cleanupStepCompleteArray();
+void incrementStepComplete(int i);
 
 
 #endif  /* _MIGCLIM_H_ */

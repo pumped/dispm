@@ -473,6 +473,9 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 ** Loop through the cellular automaton. */
                 for (i = 0; i < nrRows; i++)
                 {
+
+                    //fork
+                    
                     last = 0;
                     for (j = 0; j < nrCols; j++)
                     {
@@ -647,6 +650,9 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
                 //fprintf(f,"%lf\n",time_spent);
                 printf("Step %d completed in %lf \n",dispStep,time_spent);
+
+                //increment step tracker
+                incrementStepComplete(dispStep);
 
 
             } /* END OF: dispStep */
