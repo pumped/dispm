@@ -151,7 +151,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
     }
 
     /* We'll use 'srand' and 'rand' here, as 'srandom' and 'random' do not work on Windows :-( */
-    srand (time (NULL));
+    srand (time (NULL)+procID);
 
     /* Allocate the necessary memory. */
     currentState = (int **)malloc (nrRows * sizeof (int *));
@@ -649,7 +649,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 end = clock();
                 time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
                 //fprintf(f,"%lf\n",time_spent);
-                //printf("Step %d completed in %lf \n",dispStep,time_spent);
+                printf("Step %d completed by proc(%i) in %lf \n",dispStep,procID,time_spent);
 
                 //increment step tracker
                 incrementStepComplete(dispStep-1);

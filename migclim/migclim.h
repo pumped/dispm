@@ -57,6 +57,12 @@ key_t stepComplete_shmkey;
 int stepComplete_shmid; 
 sem_t *stepCompleteLock;
 int *stepComplete;
+
+key_t written_shmkey; 
+int written_shmid; 
+sem_t *writeSynchroniser;
+int *written;
+
 int procID;
 
 /*

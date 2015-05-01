@@ -29,7 +29,6 @@ int status = 0;
 int i;
 
 char const *outputDirectory;
-bool *written;
 bool quit = false;
 
 
@@ -64,7 +63,7 @@ int main( int argc, char const *argv[] ) {
 		printf("Zeroed \n");
 
 	    //start processes
-	    for (i = 0; i < NUMPROC+1; i++)
+	    for (i = 0; i < NUMPROC + 1; i++)
 	    {
 	        //start process
 	        procCount++;
@@ -80,13 +79,19 @@ int main( int argc, char const *argv[] ) {
 	        		indexAggregates();
 	        		/* run dispersal model */
 					mcMigrate(&param, &nrFiles, inputDirectory, outputDirectory);
-					deIndexAggregates();
+
+					/*if (procID == 1) {
+	        			writeThread();
+	        		}*/
+
+	        		deIndexAggregates();
+
 					return(0);				
 	        }
 
 	        /* wait for child processes to return if over process limit */
 	        proc_wait();
-	        sleep(1);        
+	        //usleep(100);        
 	    }
 
 	    /* Wait for remaining processes to finish */
@@ -124,12 +129,10 @@ int main( int argc, char const *argv[] ) {
 void writeThread() {
 	int m;
 	
-	printf("Write Thread Running\n");
+	printf("Write Thread Running (proc %d)\n",procID);
 
-	written = malloc(dispSteps*sizeof(bool));
-	for (m=0; m < dispSteps; m++) {
-		written[m] = false;
-	}
+	/*written = malloc(dispSteps*sizeof(bool));
+	*/
 
 	//wait for array
 	//bool quit = false;
@@ -137,15 +140,26 @@ void writeThread() {
 
 	while (!quit) {
 		allWritten = true;
+
 		for (m = 0; m < dispSteps; m++) {
-			if (stepComplete[m] >= NUMPROC-1 && !written[m]) {
+			sem_wait(writeSynchroniser);
+			//printf("checking");
+			//printf("m %d",stepComplete[m]);
+			if (stepComplete[m] >= NUMPROC && !written[m]) {
 				written[m] = true;
+				sem_post(writeSynchroniser);
+
+				//printf("\nproc %i writing %d\n",procID,m);
 
 				// write it
 				writeAggregateFile(m,outputDirectory);
 				//printf("Writing: %d\n",m);
+			} else {
+				sem_post(writeSynchroniser);
 			}
+
 			if (!written[m]) {
+				//printf("not written");
 				allWritten = false;
 			}
 		}
@@ -155,16 +169,16 @@ void writeThread() {
 		}
 
 		//printf("Waiting\n");
-		sleep(1);
+		usleep(50);
 		//printf("Awake\n");
 	}
 
-	printf("Writing Finished");
+	printf("Writing Finished (proc%d)\n",procID);
 
 	//write aggregate
 }
 
-void writeAggregateFile(int i, char const *outputDirectory) {
+void writeAggregateFile(int matID, char const *outputDirectory) {
 	char    fileName[128];
 	char	fileLCKName[128];
 	double time_spent;
@@ -179,20 +193,20 @@ void writeAggregateFile(int i, char const *outputDirectory) {
 	noData = -9999;
     
 
-    sprintf(fileName, "%s/agg%i.asc", outputDirectory,i);
+    sprintf(fileName, "%s/agg%i.asc", outputDirectory,matID);
     sprintf(fileLCKName, "%s.LCK",fileName);
     
     //write lock
     writeLock(fileLCKName);
 
     //write matrix
-    writeMat(fileName, aggregates[i]);
+    writeMat(fileName, aggregates[matID]);
     
     //remove lock
     deleteLock(fileLCKName);
 
     time_spent = (double)(clock() - start) / CLOCKS_PER_SEC;
-    printf("Write %i : %lf \n",i,time_spent);
+    printf("Write %i : %lf proc(%d)\n",matID,time_spent,procID);
 }
 
 void writeLock(char const *lockPath) {
@@ -221,6 +235,22 @@ void setupStepCompleteArray() {
     //open sem and set auto unlink
     stepCompleteLock = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
     sem_unlink ("pSem"); 
+
+    //create semaphore and shared memory
+    written_shmkey = ftok ("/dev/null", 6);
+    written_shmid = shmget (written_shmkey, dispSteps*sizeof (int), 0644 | IPC_CREAT);
+    if (written_shmid < 0){  perror ("shmget\n"); exit (1); } //exit on error
+    //shmctl (stepComplete_shmid , IPC_RMID , 0);
+    written = (int *) shmat (written_shmid, 0, 0);
+
+    int m;
+    for (m=0; m < dispSteps; m++) {
+		written[m] = false;
+	}
+
+    writeSynchroniser = sem_open ("writeSyncSem", O_CREAT | O_EXCL, 0644, 1); 
+    sem_unlink("writeSyncSem");
+
 }
 
 void cleanupStepCompleteArray() {
@@ -228,8 +258,12 @@ void cleanupStepCompleteArray() {
         shmdt ((void *) stepComplete);
         shmctl (stepComplete_shmid, IPC_RMID, 0);
 
+        shmdt ((void *) written);
+        shmctl (written_shmid, IPC_RMID, 0);
+
         /* cleanup semaphores */
         sem_destroy (stepCompleteLock);
+        sem_destroy (writeSynchroniser);
 }
 
 void incrementStepComplete(int i) {
@@ -274,8 +308,8 @@ void deIndexAggregates() {
 
 void proc_wait() {
     /* If at process limit, wait for other processes to finish */
-    if (procCount >= MAXPROC) {
-        printf("waiting\n");
+    if (procCount >= MAXPROC + 1) {
+        //printf("waiting\n");
         if ((wpid = wait(&status)) > 0)
         {
             procCount--;
