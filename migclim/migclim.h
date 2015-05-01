@@ -57,6 +57,7 @@ key_t stepComplete_shmkey;
 int stepComplete_shmid; 
 sem_t *stepCompleteLock;
 int *stepComplete;
+int procID;
 
 /*
 ** Function prototypes.
@@ -90,6 +91,8 @@ void zeroAggregates();
 void setupStepCompleteArray();
 void cleanupStepCompleteArray();
 void incrementStepComplete(int i);
+
+void writeThread();
 
 
 #endif  /* _MIGCLIM_H_ */

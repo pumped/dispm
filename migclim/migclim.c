@@ -28,7 +28,9 @@ pid_t child_pid, wpid;
 int status = 0;
 int i;
 
-
+char const *outputDirectory;
+bool *written;
+bool quit = false;
 
 
 
@@ -38,7 +40,7 @@ int main( int argc, char const *argv[] ) {
 					
 		char const *param = argv[1];
 		char const *inputDirectory = argv[2];
-		char const *outputDirectory = argv[3];
+		outputDirectory = argv[3];
 		int nrFiles = 12;
 
 		//read paramater file
@@ -62,12 +64,17 @@ int main( int argc, char const *argv[] ) {
 		printf("Zeroed \n");
 
 	    //start processes
-	    for (i = 0; i < NUMPROC; i++)
+	    for (i = 0; i < NUMPROC+1; i++)
 	    {
 	        //start process
 	        procCount++;
 	        if ((child_pid = fork()) == 0) { // child process
-	        		
+	        		procID = i;
+	        		if (i == 0) {
+	        			writeThread();
+	        			return(0);
+	        		}
+
 	        		//attach aggregates
 	        		aggregates_data = shmat(shmid2, NULL, 0);
 	        		indexAggregates();
@@ -91,14 +98,17 @@ int main( int argc, char const *argv[] ) {
 	    	}	
 	    }
 
+	    cleanupStepCompleteArray();
+
 	    /* write out aggregates */	    
-	    for (i=0; i<dispSteps;i++) {
+	    /*for (i=0; i<dispSteps;i++) {
 	    	writeAggregateFile(i, outputDirectory);
-		}
+		}*/
+	    quit = true;
 
 		//cleanup
 	    deIndexAggregates();
-	    cleanupStepCompleteArray();
+	    
 	    
 
 	/* Bad command line arguments */
@@ -109,6 +119,49 @@ int main( int argc, char const *argv[] ) {
 	}
 
 	return(1);
+}
+
+void writeThread() {
+	int m;
+	
+	printf("Write Thread Running\n");
+
+	written = malloc(dispSteps*sizeof(bool));
+	for (m=0; m < dispSteps; m++) {
+		written[m] = false;
+	}
+
+	//wait for array
+	//bool quit = false;
+	bool allWritten;
+
+	while (!quit) {
+		allWritten = true;
+		for (m = 0; m < dispSteps; m++) {
+			if (stepComplete[m] >= NUMPROC-1 && !written[m]) {
+				written[m] = true;
+
+				// write it
+				writeAggregateFile(m,outputDirectory);
+				//printf("Writing: %d\n",m);
+			}
+			if (!written[m]) {
+				allWritten = false;
+			}
+		}
+
+		if (allWritten) {
+			quit = true;
+		}
+
+		//printf("Waiting\n");
+		sleep(1);
+		//printf("Awake\n");
+	}
+
+	printf("Writing Finished");
+
+	//write aggregate
 }
 
 void writeAggregateFile(int i, char const *outputDirectory) {
@@ -162,6 +215,7 @@ void setupStepCompleteArray() {
     stepComplete_shmkey = ftok ("/dev/null", 5);
     stepComplete_shmid = shmget (stepComplete_shmkey, dispSteps*sizeof (int), 0644 | IPC_CREAT);
     if (stepComplete_shmid < 0){  perror ("shmget\n"); exit (1); } //exit on error
+    //shmctl (stepComplete_shmid , IPC_RMID , 0);
     stepComplete = (int *) shmat (stepComplete_shmid, 0, 0);   /* attach p to shared memory */
 
     //open sem and set auto unlink
@@ -181,7 +235,7 @@ void cleanupStepCompleteArray() {
 void incrementStepComplete(int i) {
 	sem_wait(stepCompleteLock);
     stepComplete[i] += 1;
-    printf ("Step Incremented: %d",i);
+    //printf ("Step Incremented: p[%d] = %d \n",i,stepComplete[i]);
     sem_post(stepCompleteLock);
 }
 

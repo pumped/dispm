@@ -314,7 +314,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
 
 
         /* Write the initial state to the data file. */
-        sprintf(fileName, "%s/%s_stats.txt", outputDir, simulName2);
+        sprintf(fileName, "%s/%s_stats%d.txt", outputDir, simulName2,procID);
         if ((fp = fopen (fileName, "w")) != NULL)
         {
             fprintf (fp, "envChgStep\tdispStep\tstepID\tunivDispersal\tNoDispersal\toccupied\tabsent\tstepColonized\tstepDecolonized\tstepLDDsuccess\n");
@@ -649,10 +649,10 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 end = clock();
                 time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
                 //fprintf(f,"%lf\n",time_spent);
-                printf("Step %d completed in %lf \n",dispStep,time_spent);
+                //printf("Step %d completed in %lf \n",dispStep,time_spent);
 
                 //increment step tracker
-                incrementStepComplete(dispStep);
+                incrementStepComplete(dispStep-1);
 
 
             } /* END OF: dispStep */
