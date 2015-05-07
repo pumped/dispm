@@ -4,11 +4,13 @@ from Config import Config
 from mat import MatrixManager
 import shutil
 import dispy
+import subprocess
 
 class ModelManager():
 
 	matrices = None #matrix manager
 	matrixID = 0 #current matrix identifier
+	local = True
 
 	def __init__(self):
 		self.matrices = MatrixManager.MatrixManager(Config)
@@ -32,7 +34,7 @@ class ModelManager():
 		self.__setupParamaterFile({'id':id})
 		log.debug('Paramater files written')
 
-		#run model on dispy node
+		# #run model on dispy node
 		self.__runModelJob(id)
 
 		return 1
@@ -48,18 +50,24 @@ class ModelManager():
 
 	def __runModelJob(self, id):
 		log.info('Model Kicked off')
-		jobs = []
 		path = Config.runPath + '/' + id
 		outputPath = path + Config.aggregatesPath
 		inputPath = path + '/'
 		paramPath = path + '/params.txt'
 
-		cluster = dispy.JobCluster(Config.migExecutable)
+		if (self.local):
+			status = subprocess.call([Config.migExecutable,paramPath,inputPath,outputPath])
+			print status
+		else:
+			jobs = []
+			
 
-		job = cluster.submit(paramPath, inputPath, outputPath);
-		n = job()
-		log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
-		log.info(job.stdout)
+			cluster = dispy.JobCluster(Config.migExecutable)
+
+			job = cluster.submit(paramPath, inputPath, outputPath);
+			n = job()
+			log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
+			log.info(job.stdout)
 
 	def __setupParamaterFile(self, settings):
 		newPath = Config.runPath + '/' + settings['id'] + '/params.txt'
