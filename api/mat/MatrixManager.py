@@ -4,6 +4,9 @@ from collections import OrderedDict
 import csv
 import subprocess
 
+#temp
+import shutil
+
 class MatrixManager():
 
 	hs = OrderedDict()
@@ -44,14 +47,20 @@ class MatrixManager():
 
 	
 	def modifyHS(self,outputFile="HS.asc", inputFile="./max_pre1.asc", tempOutputFile = "HS.tif"):	
-		
-		#extract and modify hs
-		cmd = ["gdalwarp -wo 'INIT_DEST=0' "+inputFile+" "+tempOutputFile+" -cutline \"PG:dbname=nyc user='postgres' password='postgres'\" -csql 'SELECT * from nyc_buildings WHERE timeline = \"current\"'"]	
-		subprocess.call(cmd, shell=True)
+		####### TODO: sort out processing!!!! #######
+		print outputFile
+		print inputFile
+		print tempOutputFile
 
-		#convert output
-		cmd = ["gdal_translate -a_nodata -9999 -of AAIGrid "+tempOutputFile+" "+outputFile]
-		subprocess.call(cmd, shell=True)
+		shutil.copyfile(inputFile,outputFile)
+
+		# #extract and modify hs
+		# cmd = ["gdalwarp -wo 'INIT_DEST=0' "+inputFile+" "+tempOutputFile+" -cutline \"PG:dbname=nyc user='postgres' password='postgres'\" -csql 'SELECT * from nyc_buildings WHERE timeline = \"current\"'"]	
+		# subprocess.call(cmd, shell=True)
+
+		# #convert output
+		# cmd = ["gdal_translate -a_nodata -9999 -of AAIGrid "+tempOutputFile+" "+outputFile]
+		# subprocess.call(cmd, shell=True)
 
 	#modify matrix
 	def setCell(self, coordinates, value):

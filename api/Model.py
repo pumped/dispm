@@ -60,7 +60,7 @@ class ModelManager():
 			print status
 		else:
 			jobs = []
-			
+
 
 			cluster = dispy.JobCluster(Config.migExecutable)
 
@@ -68,6 +68,9 @@ class ModelManager():
 			n = job()
 			log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
 			log.info(job.stdout)
+
+	def getDataPath(self):
+		return Config.dataPath + 'siam'
 
 	def __setupParamaterFile(self, settings):
 		newPath = Config.runPath + '/' + settings['id'] + '/params.txt'
@@ -89,23 +92,26 @@ class ModelManager():
 
 	def __writeInputFiles(self, id):
 		dest = Config.runPath + '/' + str(id)
-		
+
+		#rasterize Control Mechanisms
+		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE time >= 0" -of GTiff '+dest+'/adjust.tif', shell=True)
+		print status
+
+		#merge rasters
+		status = subprocess.call('gdal_merge.py -a_nodata -9999 -n -9999 '+self.getDataPath()+'/max_pre1.tif '+dest+'/adjust.tif -o '+dest+'/merged.tif', shell=True)
+
+		#translate to AAIGrid
+		status = subprocess.call('gdal_translate -a_nodata -9999 -of AAIGrid '+dest+'/merged.tif '+dest+'/max_pre1.asc', shell=True)
+
 		#copy hs to folder
-		src = Config.hsFile
-		dmDest = dest + '/max_pre1.asc'
-		shutil.copyfile(src,dmDest)
-		
+		#src = Config.hsTif
+		#dmDest = dest + '/max_pre1.tif'
+		#shutil.copyfile(src,dmDest)
+
 		#copy initial distribution map over
 		src = Config.initialFiles + '/dist_p.asc'
 		dmDest = dest + '/dist_p.asc'
 		shutil.copyfile(src,dmDest)
-
-		#copy mig over
-		# src = Config.initialFiles + '/mig'
-		# migDest = dest + '/mig'
-		# shutil.copyfile(src,migDest)
-		# shutil.copystat(src,migDest)
-
 
 
 class Model():
