@@ -32,6 +32,9 @@ class Controller (threading.Thread):
 	def getCurrentState(self):
 		return {"ID":self.model.getCurrentID()}
 
+	def makeID(self, species, timeline):
+		return str(species) + "-" + str(timeline)
+
 	#add a new job to the queue
 	def addJob(self,job):
 		self.modelQueue.put(job)
@@ -50,7 +53,7 @@ class Controller (threading.Thread):
 			else:
 				#do processing
 				log.info('Processed Job: ' + str(job))
-				status = self.model.runModel(-1)
+				status = self.model.runModel(str(job))
 
 				if (status):
 					log.info('model run completed successfully')
@@ -61,6 +64,3 @@ class Controller (threading.Thread):
 			#exit if quit registered
 			if (self.quit):
 				break
-
-
-

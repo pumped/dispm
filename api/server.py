@@ -17,9 +17,9 @@ class Server():
 		self._app.route('/',callback=self.default)
 		self._app.route('/getTimeline',callback=self.getTimeline)
 		self._app.route('/status',callback=self.status)
-		self._app.route('/set/<project>',callback=self.setData)
-		self._app.route('/setPU/<project>/<id>/<value>',callback=self.setPU)
-		self._app.route('/restore/<project>',callback=self.restore)
+		#self._app.route('/set/<project>',callback=self.setData)
+		self._app.route('/save/<speciesID>/<timelineID>',callback=self.saveState)
+		#self._app.route('/restore/<project>',callback=self.restore)
 		self._app.route('/runModel',callback=self.runModel)
 
 	# /
@@ -40,16 +40,22 @@ class Server():
 		return "Timeline set"
 
 	# /set/<project>
-	def setData(self, project="Demo"):
-	    return "Project changed"
+	# def setData(self, project="Demo"):
+	#     return "Project changed"
 
 	# /setPU/<project>/<id>/<value>
-	def setPU(self, project, id, value):
-		return "PU Set " + project + " " + id + " " + value
-		
+	def saveState(self, speciesID, timelineID):
+		#run model
+		runID = self.controller.makeID(speciesID, timelineID)
+		self.controller.addJob(runID)
+
+		#save it
+		return "{state:'ok',response:'state saved, running model',model:{id:'"+runID+"'}}"
+
 	# /restore/<project>
 	def restore(self, project):
 		return "Model Reset"
+
 
 	# /runModel
 	def runModel(self):
@@ -64,7 +70,7 @@ class Server():
 	# @route('/data/<filename>')
 	# def server_static(filename):
 	#     return static_file(filename, root='Marxan/MarZoneData_unix/output')
-	    
+
 	from bottle import error
 	@error(404)
 	def error404(error):
