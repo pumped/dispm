@@ -48,6 +48,8 @@ class ModelManager():
 	def getCurrentID(self, force=False):
 		return self.matrices.checkIdentity(force)
 
+
+	#run the model executable and process output
 	def __runModelJob(self, id):
 		log.info('Model Kicked off')
 		path = Config.runPath + '/' + id
@@ -55,12 +57,24 @@ class ModelManager():
 		inputPath = path + '/'
 		paramPath = path + '/params.txt'
 
+		#if running modelling locally
 		if (self.local):
-			status = subprocess.call([Config.migExecutable,paramPath,inputPath,outputPath])
-			print status
-		else:
-			jobs = []
+			cmd = "stdbuf -oL " + Config.migExecutable + " " + paramPath + " " + inputPath + " " + outputPath
 
+			#run process
+			proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=0, shell=True)
+
+			#capture output
+			while True:
+				output = proc.stdout.readline()
+				if output == '' and proc.poll() is not None:
+					break
+				if output:
+					self.processOutput(output.strip())
+
+			print "Process Finished"
+		else: #running remotely using dispy
+			jobs = []
 
 			cluster = dispy.JobCluster(Config.migExecutable)
 
@@ -68,6 +82,24 @@ class ModelManager():
 			n = job()
 			log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
 			log.info(job.stdout)
+
+	def processOutput(output):
+	    line = output.lower()
+
+	    #process file write completion
+	    if line.startswith("write"):
+	        if (":" in line):
+	            parts = line.split(":",1)
+
+	            if len(parts) == 2:
+	                #determine year number
+	                fileNumber = parts[0].replace("write","").strip(" ")
+
+	                #process output
+	                statsJson = parts[1].strip()
+                	stats = json.loads(statsJson)
+
+	                return [fileNumber, stats]
 
 	def getDataPath(self):
 		return Config.dataPath + 'siam'
