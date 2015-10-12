@@ -33,10 +33,10 @@ bool quit = false;
 
 
 
-int main( int argc, char const *argv[] ) {    
+int main( int argc, char const *argv[] ) {
 
     if (argc == 4) {
-					
+
 		char const *param = argv[1];
 		char const *inputDirectory = argv[2];
 		outputDirectory = argv[3];
@@ -86,12 +86,12 @@ int main( int argc, char const *argv[] ) {
 
 	        		deIndexAggregates();
 
-					return(0);				
+					return(0);
 	        }
 
 	        /* wait for child processes to return if over process limit */
 	        proc_wait();
-	        //usleep(100);        
+	        //usleep(100);
 	    }
 
 	    /* Wait for remaining processes to finish */
@@ -100,12 +100,12 @@ int main( int argc, char const *argv[] ) {
 	        if (status != 0) {
 	        	printf("Exit status of %d was %d (%s)\n", (int)wpid, status,
 	            	   (status > 0) ? "failed" : "success");
-	    	}	
+	    	}
 	    }
 
 	    cleanupStepCompleteArray();
 
-	    /* write out aggregates */	    
+	    /* write out aggregates */
 	    /*for (i=0; i<dispSteps;i++) {
 	    	writeAggregateFile(i, outputDirectory);
 		}*/
@@ -113,14 +113,14 @@ int main( int argc, char const *argv[] ) {
 
 		//cleanup
 	    deIndexAggregates();
-	    
-	    
+
+
 
 	/* Bad command line arguments */
     } else {
-				
+
 		printf("\n\nInvalid arguments. \nExpected:\nmig [parameter file location] [input location] [output location]\n\n");
-		return(-1);		
+		return(-1);
 	}
 
 	return(1);
@@ -128,7 +128,7 @@ int main( int argc, char const *argv[] ) {
 
 void writeThread() {
 	int m;
-	
+
 	printf("Write Thread Running (proc %d)\n",procID);
 
 	/*written = malloc(dispSteps*sizeof(bool));
@@ -183,7 +183,7 @@ void writeAggregateFile(int matID, char const *outputDirectory) {
 	char	fileLCKName[128];
 	double time_spent;
 	clock_t start = clock();
-	
+
 	//setup data headers
 	nrCols = 3084;
 	nrRows = 5045;
@@ -191,22 +191,40 @@ void writeAggregateFile(int matID, char const *outputDirectory) {
 	yllCorner = -20.02510726;
 	cellSize = 0.001;
 	noData = -9999;
-    
 
-    sprintf(fileName, "%s/agg%i.asc", outputDirectory,matID);
-    sprintf(fileLCKName, "%s.LCK",fileName);
-    
-    //write lock
-    writeLock(fileLCKName);
+  sprintf(fileName, "%s/agg%i.asc", outputDirectory,matID);
+  sprintf(fileLCKName, "%s.LCK",fileName);
 
-    //write matrix
-    writeMat(fileName, aggregates[matID]);
-    
-    //remove lock
-    deleteLock(fileLCKName);
+  //write lock
+  writeLock(fileLCKName);
 
-    time_spent = (double)(clock() - start) / CLOCKS_PER_SEC;
-    printf("Write %i : %lf proc(%d)\n",matID,time_spent,procID);
+  //write matrix
+  writeMat(fileName, aggregates[matID]);
+
+  //remove lock
+  deleteLock(fileLCKName);
+
+  //sum
+  int val = sum(matID);
+
+  time_spent = (double)(clock() - start) / CLOCKS_PER_SEC;
+  printf("Write %i : {\"time\":%lf,\"occupied\":%i,\"new\":1}\n",matID,time_spent,val);
+}
+
+int sum(int matID) {
+  int count = 0;
+  int occupationThreshold = NUMPROC / 2;
+  int j,k;
+
+  for (j=0; j < nrRows; j++) {
+    for (k=0; k < nrCols; k++) {
+      if (aggregates[matID][j][k] > occupationThreshold) {
+        count++;
+      }
+    }
+  }
+
+  return count;
 }
 
 void writeLock(char const *lockPath) {
@@ -233,8 +251,8 @@ void setupStepCompleteArray() {
     stepComplete = (int *) shmat (stepComplete_shmid, 0, 0);   /* attach p to shared memory */
 
     //open sem and set auto unlink
-    stepCompleteLock = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
-    sem_unlink ("pSem"); 
+    stepCompleteLock = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1);
+    sem_unlink ("pSem");
 
     //create semaphore and shared memory
     written_shmkey = ftok ("/dev/null", 6);
@@ -248,7 +266,7 @@ void setupStepCompleteArray() {
 		written[m] = false;
 	}
 
-    writeSynchroniser = sem_open ("writeSyncSem", O_CREAT | O_EXCL, 0644, 1); 
+    writeSynchroniser = sem_open ("writeSyncSem", O_CREAT | O_EXCL, 0644, 1);
     sem_unlink("writeSyncSem");
 
 }

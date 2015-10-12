@@ -19,7 +19,7 @@
 #include <sys/types.h>      /* key_t, sem_t, pid_t      */
 #include <sys/shm.h>        /* shmat(), IPC_RMID        */
 #include <semaphore.h>      /* sem_open(), sem_destroy(), sem_wait().. */
-#include <fcntl.h>  
+#include <fcntl.h>
 
 
 
@@ -42,7 +42,7 @@
 */
 
 extern int     nrRows, nrCols, envChgSteps, dispSteps, dispDist, iniMatAge,
-               fullMatAge, rcThreshold, barrierType, lddMinDist, lddMaxDist, 
+               fullMatAge, rcThreshold, barrierType, lddMinDist, lddMaxDist,
                noData, replicateNb;
 extern double *dispKernel, *propaguleProd, lddFreq, xllCorner, yllCorner,
                cellSize;
@@ -53,13 +53,13 @@ int ***aggregates;
 int *aggregates_data;
 int shmid2;
 
-key_t stepComplete_shmkey; 
-int stepComplete_shmid; 
+key_t stepComplete_shmkey;
+int stepComplete_shmid;
 sem_t *stepCompleteLock;
 int *stepComplete;
 
-key_t written_shmkey; 
-int written_shmid; 
+key_t written_shmkey;
+int written_shmid;
 sem_t *writeSynchroniser;
 int *written;
 
@@ -83,8 +83,9 @@ void genClust            (int *nrow, int *ncol, int *ncls, int *niter, int *thrs
 void validate            (char **obsFileName, int *npts, char **simFileName, int *ncls, double *bestScore);
 int main 				 (int argc, char const *argv[]);
 
-void writeAggregateFile	 (int i, char const *outputDirectory);
+void writeAggregateFile	 (int matID, char const *outputDirectory);
 void writeLock			 (char const *lockPath);
+int sum             (int matID);
 
 void deleteLock			 (char const *lockPath);
 
