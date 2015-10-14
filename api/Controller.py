@@ -39,6 +39,10 @@ class Controller (threading.Thread):
 	def addJob(self,job):
 		self.modelQueue.put(job)
 
+	def stop(self):
+		self.model.stop()
+		self.quit = True
+
 	#wait for jobs to become available and run them
 	def run(self):
 		log.debug('Control thread started')

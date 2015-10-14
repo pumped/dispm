@@ -9,7 +9,7 @@ if __name__ == "__main__":
 	try:
 		controller = Controller()
 		controller.start()
-		
+
 		server = Server()
 		server.controller = controller
 
@@ -27,5 +27,5 @@ if __name__ == "__main__":
 
 	except Exception as ex:
 		logging.exception('Uncaught error')
-	finally:	
-		controller.quit = True
+	finally:
+		controller.stop()

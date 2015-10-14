@@ -5,15 +5,26 @@ from mat import MatrixManager
 import shutil
 import dispy
 import subprocess
+import json
+from DataStore import StatManager
+from MapRenderer import MapGenerator
 
 class ModelManager():
 
 	matrices = None #matrix manager
-	matrixID = 0 #current matrix identifier
 	local = True
 
 	def __init__(self):
 		self.matrices = MatrixManager.MatrixManager(Config)
+		self.statStore = StatManager()
+		self.mapGenerator = MapGenerator()
+		self.mapGenerator.start()
+
+	def __del__(self):
+		self.mapGenerator.stop()
+
+	def stop(self):
+		self.mapGenerator.stop()
 
 	#run the model with a specific identifier
 	def runModel(self, id):
@@ -34,13 +45,10 @@ class ModelManager():
 		self.__setupParamaterFile({'id':id})
 		log.debug('Paramater files written')
 
-		# #run model on dispy node
+		# #run model
 		self.__runModelJob(id)
 
 		return 1
-
-	def setMatrix(self, id):
-		self.matrixID = id
 
 	def getState(self,id):
 		pass
@@ -70,9 +78,18 @@ class ModelManager():
 				if output == '' and proc.poll() is not None:
 					break
 				if output:
-					self.processOutput(output.strip())
+					result = self.processOutput(output.strip())
+					if result:
+						time = result[0]
+						runFile = inputPath + "aggs/agg" + time + ".asc"
+						renderedFile = Config.renderedPath + id + "/agg" + time + ".png"
 
-			print "Process Finished"
+						#render map
+						self.mapGenerator.renderFile(runFile,renderedFile)
+
+						#update stats
+						self.statStore.updateTime("asdf",id,time,result[1])
+
 		else: #running remotely using dispy
 			jobs = []
 
@@ -83,7 +100,7 @@ class ModelManager():
 			log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
 			log.info(job.stdout)
 
-	def processOutput(output):
+	def processOutput(self,output):
 	    line = output.lower()
 
 	    #process file write completion
