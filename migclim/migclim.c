@@ -180,7 +180,7 @@ void writeThread() {
 
 void writeAggregateFile(int matID, char const *outputDirectory) {
 	char    fileName[128];
-	char	fileLCKName[128];
+	//char	fileLCKName[128];
 	double time_spent;
 	clock_t start = clock();
 
@@ -193,16 +193,16 @@ void writeAggregateFile(int matID, char const *outputDirectory) {
 	noData = -9999;
 
   sprintf(fileName, "%s/agg%i.asc", outputDirectory,matID);
-  sprintf(fileLCKName, "%s.LCK",fileName);
+  //sprintf(fileLCKName, "%s.LCK",fileName);
 
   //write lock
-  writeLock(fileLCKName);
+  //writeLock(fileLCKName);
 
   //write matrix
   writeMat(fileName, aggregates[matID]);
 
   //remove lock
-  deleteLock(fileLCKName);
+  //deleteLock(fileLCKName);
 
   //sum
   int val = sum(matID);

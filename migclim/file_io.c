@@ -51,7 +51,7 @@ int mcInit (char const *paramFile)
   fullOutput = false;
   replicateNb = 1;
   strcpy (simulName, "MigClimTest");
-  
+
   /*
   ** Open the file for reading.
   */
@@ -342,9 +342,9 @@ int mcInit (char const *paramFile)
 	    status = -1;
 	    printf ("Invalid value for replicateNb parameter on line %d in parameter file %s\n", lineNr, paramFile);
 	    goto End_of_Routine;
-      }   
+      }
     }
-    
+
     /* simulName */
     else if (strcmp (param, "simulName") == 0)
     {
@@ -438,7 +438,7 @@ int mcInit (char const *paramFile)
 	     paramFile);
     goto End_of_Routine;
   }
-  
+
  End_of_Routine:
   /*
   ** Close the file and return the status.
@@ -475,7 +475,7 @@ int readMat (char *fName, int **mat)
 
   status = 0;
   fp = NULL;
-  
+
   /*
   ** Open the file for reading.
   */
@@ -552,7 +552,7 @@ int readMat (char *fName, int **mat)
     printf ("'NODATA_value' expected in data file %s\n", fName);
     goto End_of_Routine;
   }
-  
+
   /*
   ** Read the values into the matrix.
   */
@@ -606,7 +606,7 @@ int writeMat (char *fName, int **mat)
 
   status = 0;
   fp = NULL;
-  
+
   /*
   ** Open the file for writing.
   */
@@ -626,7 +626,7 @@ int writeMat (char *fName, int **mat)
   fprintf (fp, "yllcorner %.9f\n", yllCorner);
   fprintf (fp, "cellsize %.9f\n", cellSize);
   fprintf (fp, "NODATA_value %d\n", noData);
-  
+
   /*
   ** Write the data to file.
   */

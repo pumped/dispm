@@ -167,15 +167,14 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
         pixelAge[i] = (int *)malloc (nrCols * sizeof (int));
         noDispersal[i] = (int *)malloc (nrCols * sizeof (int));
     }
-    
 
 
-    clock_t begin, end;
+
+    clock_t begin, end, total_begin, total_end;
     double time_spent;
-    /*FILE *f = fopen("timing.csv", "w");
+    double total_time_spent;
 
-    /* aggreagation array */
-
+    total_begin = clock();
 
 
     /* Replicate the simulation replicateNb times. If replicateNb > 1 then the
@@ -475,7 +474,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 {
 
                     //fork
-                    
+
                     last = 0;
                     for (j = 0; j < nrCols; j++)
                     {
@@ -506,7 +505,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                             /* Now we search if there is a suitable source cell to colonize the sink cell. */
                             if (mcSrcCell (i, j, currentState, pixelAge, loopID, habSuitability[i][j], barriers, &last)) {
                                 cellInDispDist = true;
-                                //last=0;  
+                                //last=0;
                             } else {
                                 //last++;
                             }
@@ -532,7 +531,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                             pixelAge[i][j] = 0;
                         }
                     }
-                    
+
                 }
 
                 /* If the LDD frequence is larger than zero, perform it. */
@@ -699,6 +698,10 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
 
         /* Write summary output to file. */
         simulTime = time (NULL) - startTime;
+        total_end = clock();
+        time_spent = (double)(total_end - total_begin) / CLOCKS_PER_SEC;
+        printf("Process Completed after %lf \n",time_spent);
+
         sprintf(fileName, "%s/%s_summary.txt", outputDir, simulName2);
         if ((fp2 = fopen (fileName, "w")) != NULL)
         {
