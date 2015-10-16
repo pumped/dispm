@@ -143,7 +143,7 @@ class ModelManager():
 		dest = Config.runPath + '/' + str(id)
 
 		#rasterize Control Mechanisms
-		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE time >= 0" -of GTiff '+dest+'/adjust.tif', shell=True)
+		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE time >= 0" -of GTiff '+dest+'/adjust.tif', shell=True)
 		print status
 
 		#merge rasters
