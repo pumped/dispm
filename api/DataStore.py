@@ -85,6 +85,17 @@ class StatStore:
         self.stats = stats
         #print "time set"
 
+
+    def getTimeline(self,id):
+        node = self.fetchTimeline(id)
+        if node:
+            return node
+        else:
+            return False
+
+    def getData(self):
+        pass
+
     def fetchTimeline(self,id):
         return self._recursiveSearch(id, self.stats)
 
@@ -136,3 +147,24 @@ class StatManager:
 
         self.stats[id].setTime(timelineID,time,stats)
         self.saveStats(id)
+
+    def getTimeline(self,id,timelineID):
+        if id not in self.stats:
+            self.loadStats(id)
+
+        node = self.stats[id].getTimeline(timelineID)
+        if node:
+            return json.dumps(node)
+        else:
+            return False
+
+
+    def getSpecies(self,id):
+        if id not in self.stats:
+            self.loadStats(id)
+
+        node = json.dumps[self.stats[id].getData()]
+        if node:
+            return json.dumps(node)
+        else:
+            return False
