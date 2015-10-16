@@ -56,6 +56,13 @@ class ModelManager():
 	def getCurrentID(self, force=False):
 		return self.matrices.checkIdentity(force)
 
+	def emit(self,message):
+		if self.emitCallback:
+			self.emitCallback(message)
+
+	def onMessage(self, func):
+		self.emitCallback = func
+
 
 	#run the model executable and process output
 	def __runModelJob(self, id):
@@ -84,11 +91,16 @@ class ModelManager():
 						runFile = inputPath + "aggs/agg" + time + ".asc"
 						renderedFile = Config.renderedPath + id + "/agg" + time + ".png"
 
+						speciesID = "asdf"
+
 						#render map
 						self.mapGenerator.renderFile(runFile,renderedFile)
 
 						#update stats
-						self.statStore.updateTime("asdf",id,time,result[1])
+						self.statStore.updateTime(speciesID,id,time,result[1])
+
+						#emit
+						self.emit('{"event":"timeline_state","data":{"speciesID":"'+speciesID+'","timelineID":"'+id+'","state":'+self.statStore.getTimeline("asdf",id)+'}}')
 
 		else: #running remotely using dispy
 			jobs = []

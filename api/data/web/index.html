@@ -30,7 +30,7 @@
 	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 	<script type="text/javascript">
 		function updateStatus() {
-			$.getJSON( "status", function( data ) { 
+			$.getJSON( "status", function( data ) {
 				console.log(data)
 				$('#mRunning').html(data.modelStatus);
 
@@ -38,10 +38,26 @@
 				for (k in data.logs) {
 					$('#status').prepend(data.logs[k].message + "</br>");
 				}
-				setTimeout(updateStatus, 500);						
+				setTimeout(updateStatus, 500);
 			});
 		}
-		updateStatus();
+		//updateStatus();
+
+		var ws = new WebSocket('ws://localhost:8082/ws');
+			var $message = $('#message');
+			ws.onopen = function(){
+				console.log("socket opened");
+			};
+			ws.onmessage = function(ev){
+				var data = JSON.parse(ev.data);
+				console.log(data);
+			};
+			ws.onclose = function(ev){
+				console.log("socket closed");
+			};
+			ws.onerror = function(ev){
+				console.log("socket error");
+			};
 	</script>
 </head>
 <body>
@@ -64,7 +80,7 @@
 	<ul>
 		<li>/set/&lt;project&gt; <span class="description">Sets the current base project being modified.</span></li>
 		<li>/setPU/&lt;project&gt;/&lt;id&gt;/&lt;value&gt; <span class="description">Sets the current action on a specific planning unit.</span></li>
-		<li><a href="/runModel">/runModel</a><span class="description">Runs the model on the current project. Test</span></li>
+		<li><a href="/api?r=runModel">/api?r=runModel</a><span class="description">Runs the model on the current project. Test</span></li>
 
 	</ul>
 

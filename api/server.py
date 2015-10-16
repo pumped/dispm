@@ -1,82 +1,77 @@
-from bottle import Bottle, static_file, route, run
-from logger import *
-from Config import Config
+from tornado import websocket, web, ioloop
 import json
+import time
+from threading import Thread
 
+cl = []
 
-class Server():
-	controller = None
+class IndexHandler(web.RequestHandler):
+	def get(self):
+		self.render("index.html")
 
-	def __init__(self, host='0.0.0.0', port=5566):
-		self._host = host
-		self._port = port
-		self._app = Bottle()
-		self._route()
+class SocketHandler(websocket.WebSocketHandler):
+	def check_origin(self, origin):
+		return True
 
-	def _route(self):
-		self._app.route('/',callback=self.default)
-		self._app.route('/getTimeline',callback=self.getTimeline)
-		self._app.route('/status',callback=self.status)
-		#self._app.route('/set/<project>',callback=self.setData)
-		self._app.route('/save/<speciesID>/<timelineID>',callback=self.saveState)
-		#self._app.route('/restore/<project>',callback=self.restore)
-		self._app.route('/runModel',callback=self.runModel)
+	def open(self):
+		if self not in cl:
+			cl.append(self)
 
-	# /
-	def default(self):
-	    return static_file('index.html', root='data/web/')
+	def on_close(self):
+		if self in cl:
+			cl.remove(self)
 
-	# /status
-	def status(self):
-		logs = log.getLiveLog()
-		modelStatus = "Not Running"
-		stats = json.dumps({"modelStatus":modelStatus,"logs":logs}, sort_keys=True, indent=4, separators=(',', ': '))
-		#stats += "Queue: " + self.controller.getStatus() +"\n"
-		return stats
+class ApiHandler(web.RequestHandler):
 
-	# /set/timeline
-	def setTimeline(self, id):
-		self.controller.model.setMatrix(id)
-		return "Timeline set"
+	@web.asynchronous
+	def get(self, *args):
 
-	# /set/<project>
-	# def setData(self, project="Demo"):
-	#     return "Project changed"
+		r = self.get_argument("r",default=None)
+		print r
 
-	# /setPU/<project>/<id>/<value>
-	def saveState(self, speciesID, timelineID):
-		#run model
-		runID = self.controller.makeID(speciesID, timelineID)
-		self.controller.addJob(runID)
+		if (r == "runModel"):
+			print self.controller
+			self.controller.modelQueue.put("test")
+			state = self.controller.getCurrentState()
+			self.write(json.dumps(state))
 
-		#save it
-		return "{state:'ok',response:'state saved, running model',model:{id:'"+runID+"'}}"
+		elif (r == "getStatus"):
+			pass
 
-	# /restore/<project>
-	def restore(self, project):
-		return "Model Reset"
+		# value = self.get_argument("value")
+		# data = {"id": id, "value" : value}
+		# data = json.dumps(data)
+		# for c in cl:
+		# 	c.write_message(data)
 
+		self.finish()
 
-	# /runModel
-	def runModel(self):
-		self.controller.modelQueue.put("test")
-		state = self.controller.getCurrentState()
-		return json.dumps(state)
-
-	# /getParents
-	def getTimeline(self):
-		return static_file('parents.json', Config.initialFiles)
-
-	# @route('/data/<filename>')
-	# def server_static(filename):
-	#     return static_file(filename, root='Marxan/MarZoneData_unix/output')
-
-	from bottle import error
-	@error(404)
-	def error404(error):
-	    return '{"error" : {"code" : 404, "string" : "Invalid Request"}}'
-
-	def run(self):
-		self._app.run(host=self._host, port=self._port, quiet=True)
+	@web.asynchronous
+	def post(self):
 		pass
-		#run(host='0.0.0.0', port=5566, debug=True)
+
+class webServer:
+
+	def emit(self,data):
+		print data
+		for c in cl:
+			c.write_message(data)
+
+	def runWebServer(self,cntrl):
+		ApiHandler.controller = cntrl
+		SocketHandler.controller = cntrl
+
+		app = web.Application([
+			(r'/ws', SocketHandler),
+			(r'/api', ApiHandler),
+			(r'/(.*)', web.StaticFileHandler, {'path': "data/web", "default_filename": "index.html"})
+		])
+
+		app.listen(5566)
+
+		self.t = Thread(target=ioloop.IOLoop.instance().start)
+		self.t.daemon = True
+		self.t.start()
+
+	def stop():
+		self.t.stop()

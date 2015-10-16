@@ -12,6 +12,7 @@ class Controller (threading.Thread):
 	modelQueue = Queue.Queue()
 	model = ModelManager()
 	quit = False
+	emitCallback = None
 
 	#constructor
 	def __init__(self):
@@ -42,6 +43,14 @@ class Controller (threading.Thread):
 	def stop(self):
 		self.model.stop()
 		self.quit = True
+
+	def onMessage(self, func):
+		self.emitCallback = func
+		self.model.onMessage(func)
+
+	def _emit(self, message):
+		if self.emitCallback:
+			self.emitCallback(message)
 
 	#wait for jobs to become available and run them
 	def run(self):
