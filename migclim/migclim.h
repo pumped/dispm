@@ -97,7 +97,7 @@ void zeroAggregates();
 
 void setupStepCompleteArray();
 void cleanupStepCompleteArray();
-void incrementStepComplete(int i);
+bool incrementStepComplete(int i);
 
 void writeThread();
 

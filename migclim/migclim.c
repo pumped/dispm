@@ -165,6 +165,7 @@ void writeThread() {
 		}
 
 		if (allWritten) {
+      printf("modelComplete : {\"finished\":1}");
 			quit = true;
 		}
 
@@ -208,7 +209,7 @@ void writeAggregateFile(int matID, char const *outputDirectory) {
   int val = sum(matID);
 
   time_spent = (double)(clock() - start) / CLOCKS_PER_SEC;
-  printf("Write %i : {\"time\":%lf,\"occupied\":%i,\"new\":1}\n",matID,time_spent,val);
+  printf("Write %i : {\"time\":%lf,\"occupied\":%i}\n",matID,time_spent,val);
 }
 
 int sum(int matID) {
@@ -284,11 +285,16 @@ void cleanupStepCompleteArray() {
         sem_destroy (writeSynchroniser);
 }
 
-void incrementStepComplete(int i) {
+bool incrementStepComplete(int i) {
+  bool summarise = false;
 	sem_wait(stepCompleteLock);
     stepComplete[i] += 1;
-    //printf ("Step Incremented: p[%d] = %d \n",i,stepComplete[i]);
-    sem_post(stepCompleteLock);
+    if (stepComplete[i] == NUMPROC) {
+      summarise = true;
+    }
+  sem_post(stepCompleteLock);
+
+  return summarise;
 }
 
 void indexAggregates() {

@@ -651,7 +651,11 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 printf("Step %d completed by proc(%i) in %lf \n",dispStep,procID,time_spent);
 
                 //increment step tracker
-                incrementStepComplete(dispStep-1);
+                if (incrementStepComplete(dispStep-1)) {
+                  //print summary
+                  int avgColonised = sum(dispStep-1);
+                  printf("StepComplete %i : {\"time\":%lf,\"occupied\":%i,\"new\":%i}\n",dispStep-1,time_spent,avgColonised,nrStepColonized);
+                }
 
 
             } /* END OF: dispStep */
