@@ -24,7 +24,7 @@ if __name__ == "__main__":
 		print 'Error: Cylons are killing users!'
 		print 'Waiting for Tasks to stop'
 
-	except Exception as ex:
-		print ex
+	# except Exception as ex:
+	# 	print ex
 	finally:
 		controller.stop()

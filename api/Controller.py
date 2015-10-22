@@ -22,35 +22,43 @@ class Controller (threading.Thread):
 	def __del__(self):
 		log.debug('Controller Terminated')
 
-	#return the latest log messages
-	def getStatus(self):
-		return self.modelQueue.qsize()
-
 	#return the state of a specific paramater set
 	def getState(self,id):
 		pass
 
+	def getTimeline(self,speciesID):
+		return self.model.statStore.getSpecies(speciesID)
+
 	def getCurrentState(self):
 		return {"ID":self.model.getCurrentID()}
 
+	#generate a run id based on species and timeline
 	def makeID(self, species, timeline):
 		return str(species) + "-" + str(timeline)
 
 	#add a new job to the queue
-	def addJob(self,job):
-		self.modelQueue.put(job)
+	def addJob(self,speciesID,timelineID):
+		ids = {"species":speciesID,"timeline":timelineID,"run":self.makeID(speciesID,timelineID)}
+		self.modelQueue.put(ids)
+		return ids
 
-	def stop(self):
-		self.model.stop()
-		self.quit = True
+	#return the latest log messages
+	def getStatus(self):
+		return self.modelQueue.qsize()
 
+	#attatch emmitter
 	def onMessage(self, func):
 		self.emitCallback = func
 		self.model.onMessage(func)
 
+	# emit to attached emitter
 	def _emit(self, message):
 		if self.emitCallback:
 			self.emitCallback(message)
+
+	def stop(self):
+		self.model.stop()
+		self.quit = True
 
 	#wait for jobs to become available and run them
 	def run(self):
@@ -61,12 +69,11 @@ class Controller (threading.Thread):
 			try:
 				job = self.modelQueue.get(True, 5)
 			except Queue.Empty:
-				#no jobs
-				pass
+				pass #no jobs yet
 			else:
 				#do processing
-				log.info('Processed Job: ' + str(job))
-				status = self.model.runModel(str(job))
+				log.info('Processed Job: ' + str(job["run"]))
+				status = self.model.runModel(job)
 
 				if (status):
 					log.info('model run completed successfully')

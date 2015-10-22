@@ -22,29 +22,47 @@ class SocketHandler(websocket.WebSocketHandler):
 			cl.remove(self)
 
 class ApiHandler(web.RequestHandler):
+	def set_default_headers(self):
+		self.set_header("Access-Control-Allow-Origin", "*")
+		self.set_header("Access-Control-Allow-Headers", "accept, cache-control, origin, x-requested-with, x-file-name, content-type")
 
 	@web.asynchronous
 	def get(self, *args):
 
-		r = self.get_argument("r",default=None)
-		print r
+		try:
+			r = self.get_argument("r",default=None)
+			print r
 
-		if (r == "runModel"):
-			print self.controller
-			self.controller.modelQueue.put("test")
-			state = self.controller.getCurrentState()
-			self.write(json.dumps(state))
+			if (r == "runModel"):
+				speciesID = self.get_argument("species",default=None)
+				timelineID = self.get_argument("timeline",default=None)
+				if speciesID and timelineID:
+					self.controller.addJob(speciesID, timelineID)
+					self.write('{"status":"OK"}')
+				else:
+					self.write("error, missing paramaters")
 
-		elif (r == "getStatus"):
-			pass
+			elif (r == "getStatus"):
+				pass
 
-		# value = self.get_argument("value")
-		# data = {"id": id, "value" : value}
-		# data = json.dumps(data)
-		# for c in cl:
-		# 	c.write_message(data)
+			elif (r == "getTimeline"):
+				speciesID = self.get_argument("species",default=None)
+				if speciesID:
+					timeline = self.controller.getTimeline(speciesID)
+					if timeline:
+						self.write(timeline)
+					else:
+						self.write("")
 
-		self.finish()
+			# value = self.get_argument("value")
+			# data = {"id": id, "value" : value}
+			# data = json.dumps(data)
+			# for c in cl:
+			# 	c.write_message(data)
+
+			self.finish()
+		except ex:
+			print ex
 
 	@web.asynchronous
 	def post(self):
@@ -53,7 +71,7 @@ class ApiHandler(web.RequestHandler):
 class webServer:
 
 	def emit(self,data):
-		print data
+		#print data
 		for c in cl:
 			c.write_message(data)
 

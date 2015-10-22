@@ -27,26 +27,26 @@ class ModelManager():
 		self.mapGenerator.stop()
 
 	#run the model with a specific identifier
-	def runModel(self, id):
+	def runModel(self, ids):
 		#default id to current if non existant
-		if (id == -1):
+		if (ids == None):
 			id = self.getCurrentID(True)
-			log.info('Identifier Defaulted to: ' + str(id))
+			log.error('Identifier Defaulted to: ' + str(id))
 
 		try:
-			self.__setupDirectory(id)
+			self.__setupDirectory(str(ids["run"]))
 		except DirectoryExists:
-			log.info('directory '+str(id)+' already exists')
+			log.info('directory '+str(ids["run"])+' already exists')
 			if not Config.debug:
 				return 0 #mark as completed already
 
-		self.__writeInputFiles(id)
+		self.__writeInputFiles(ids["run"])
 		log.debug('Input files written')
-		self.__setupParamaterFile({'id':id})
+		self.__setupParamaterFile({'id':ids["run"]})
 		log.debug('Paramater files written')
 
 		# #run model
-		self.__runModelJob(id)
+		self.__runModelJob(ids)
 
 		return 1
 
@@ -65,9 +65,9 @@ class ModelManager():
 
 
 	#run the model executable and process output
-	def __runModelJob(self, id):
+	def __runModelJob(self, ids):
 		log.info('Model Kicked off')
-		path = Config.runPath + '/' + id
+		path = Config.runPath + '/' + ids["run"]
 		outputPath = path + Config.aggregatesPath
 		inputPath = path + '/'
 		paramPath = path + '/params.txt'
@@ -89,18 +89,20 @@ class ModelManager():
 					if result:
 						time = result[0]
 						runFile = inputPath + "aggs/agg" + time + ".asc"
-						renderedFile = Config.renderedPath + id + "/agg" + time + ".png"
+						renderedFile = Config.renderedPath + ids["run"] + "/agg" + time + ".png"
 
-						speciesID = "asdf"
+						speciesID = ids["species"]
+						timelineID = ids["timeline"]
 
 						#render map
 						self.mapGenerator.renderFile(runFile,renderedFile)
 
 						#update stats
-						self.statStore.updateTime(speciesID,id,time,result[1])
+						self.statStore.updateTime(speciesID,timelineID,time,result[1])
 
 						#emit
-						self.emit('{"event":"timeline_state","data":{"speciesID":"'+speciesID+'","timelineID":"'+id+'","state":'+self.statStore.getTimeline("asdf",id)+'}}')
+						state = self.statStore.getTimeline(speciesID,timelineID)
+						self.emit('{"event":"timeline_state","data":{"speciesID":"'+speciesID+'","timelineID":"'+timelineID+'","state":'+state+'}}')
 
 		else: #running remotely using dispy
 			jobs = []
