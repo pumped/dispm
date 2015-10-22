@@ -13,6 +13,9 @@ class ModelManager():
 
 	matrices = None #matrix manager
 	local = True
+	STEPCOMPLETE = "stepcomplete"
+	STEPWRITTEN = "write"
+	MODELCOMPLETE = "modelcomplete"
 
 	def __init__(self):
 		self.matrices = MatrixManager.MatrixManager(Config)
@@ -87,22 +90,30 @@ class ModelManager():
 				if output:
 					result = self.processOutput(output.strip())
 					if result:
-						time = result[0]
-						runFile = inputPath + "aggs/agg" + time + ".asc"
-						renderedFile = Config.renderedPath + ids["run"] + "/agg" + time + ".png"
-
+						time = result[1]
 						speciesID = ids["species"]
 						timelineID = ids["timeline"]
 
-						#render map
-						self.mapGenerator.renderFile(runFile,renderedFile)
+						if result[0] == self.STEPCOMPLETE:
+							#update stats
+							self.statStore.updateTime(speciesID,timelineID,time,result[2])
 
-						#update stats
-						self.statStore.updateTime(speciesID,timelineID,time,result[1])
+							#emit
+							state = self.statStore.getTimeline(speciesID,timelineID)
+							self.emit('{"event":"timeline_state","data":{"speciesID":"'+speciesID+'","timelineID":"'+timelineID+'","state":'+state+'}}')
 
-						#emit
-						state = self.statStore.getTimeline(speciesID,timelineID)
-						self.emit('{"event":"timeline_state","data":{"speciesID":"'+speciesID+'","timelineID":"'+timelineID+'","state":'+state+'}}')
+						if result[0] == self.STEPWRITTEN:
+							runFile = inputPath + "aggs/agg" + time + ".asc"
+							renderedFile = Config.renderedPath + ids["run"] + "/agg" + time + ".png"
+
+							#render map
+							self.mapGenerator.renderFile(runFile,renderedFile)
+
+							#emit
+							self.emit('{"event":"time_rendered","data":{"speciesID":"'+speciesID+'","timelineID":"'+timelineID+'","time":'+time+'}}')
+
+						if result[0] == self.MODELCOMPLETE:
+							self.emit('{"event":"model_complete"}')
 
 		else: #running remotely using dispy
 			jobs = []
@@ -115,22 +126,39 @@ class ModelManager():
 			log.info(job.stdout)
 
 	def processOutput(self,output):
-	    line = output.lower()
+		line = output.lower()
 
-	    #process file write completion
-	    if line.startswith("write"):
-	        if (":" in line):
-	            parts = line.split(":",1)
+		#process file write completion
+		if line.startswith(self.STEPWRITTEN):
+			if (":" in line):
+				parts = line.split(":",1)
 
-	            if len(parts) == 2:
-	                #determine year number
-	                fileNumber = parts[0].replace("write","").strip(" ")
+				if len(parts) == 2:
+					#determine year number
+					fileNumber = parts[0].replace(self.STEPWRITTEN,"").strip(" ")
 
-	                #process output
-	                statsJson = parts[1].strip()
-                	stats = json.loads(statsJson)
+					#process output
+					statsJson = parts[1].strip()
+					stats = json.loads(statsJson)
 
-	                return [fileNumber, stats]
+					return [self.STEPWRITTEN,fileNumber, stats]
+
+		if line.startswith(self.STEPCOMPLETE):
+			if (":" in line):
+				parts = line.split(":",1)
+
+				if len(parts) == 2:
+					#determine year number
+					fileNumber = parts[0].replace(self.STEPCOMPLETE,"").strip(" ")
+
+					#process output
+					statsJson = parts[1].strip()
+					stats = json.loads(statsJson)
+					print statsJson
+
+					return [self.STEPCOMPLETE,fileNumber, stats]
+		if line.startswith(self.MODELCOMPLETE):
+			return [self.MODELCOMPLETE,0]
 
 	def getDataPath(self):
 		return Config.dataPath + 'siam'
