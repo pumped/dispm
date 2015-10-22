@@ -83,7 +83,8 @@ class webServer:
 			(r'/ws', SocketHandler),
 			(r'/api', ApiHandler),
 			(r'/(.*)', web.StaticFileHandler, {'path': "data/web", "default_filename": "index.html"})
-		])
+		],
+		debug=True)
 
 		app.listen(5566)
 
