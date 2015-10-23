@@ -86,6 +86,7 @@ class ModelManager():
 			while True:
 				output = proc.stdout.readline()
 				if output == '' and proc.poll() is not None:
+					self.emit('{"event":"model_complete"}')
 					break
 				if output:
 					result = self.processOutput(output.strip())
@@ -113,7 +114,8 @@ class ModelManager():
 							self.emit('{"event":"time_rendered","data":{"speciesID":"'+speciesID+'","timelineID":"'+timelineID+'","time":'+time+'}}')
 
 						if result[0] == self.MODELCOMPLETE:
-							self.emit('{"event":"model_complete"}')
+							pass
+							#self.emit('{"event":"model_complete"}')
 
 		else: #running remotely using dispy
 			jobs = []
