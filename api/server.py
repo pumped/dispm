@@ -1,7 +1,9 @@
 from tornado import websocket, web, ioloop
 import json
 import time
+import sys, traceback
 from threading import Thread
+import StringIO
 
 cl = []
 
@@ -61,12 +63,48 @@ class ApiHandler(web.RequestHandler):
 			# 	c.write_message(data)
 
 			self.finish()
-		except ex:
-			print ex
+		except:
+			print "Unexpected error:", sys.exc_info()[0]
 
 	@web.asynchronous
 	def post(self):
 		pass
+
+
+class WMSHandler(web.RequestHandler):
+	def set_default_headers(self):
+		self.set_header("Access-Control-Allow-Origin", "*")
+		self.set_header("Access-Control-Allow-Headers", "accept, cache-control, origin, x-requested-with, x-file-name, content-type")
+		self.set_header("Content-type", "image/png")
+
+	@web.asynchronous
+	def get(self, *args):
+
+		try:
+			params = {}
+			params['bbox'] = self.get_argument("BBOX",default=None)
+			params['width'] = self.get_argument("WIDTH",default=None)
+			params['height'] = self.get_argument("HEIGHT",default=None)
+			params['time'] = self.get_argument("time",default=None)
+			params['species'] = self.get_argument("species",default=None)
+			params['timeline'] = self.get_argument("timeline",default=None)
+
+			if params['bbox'] and params['width'] and params['height'] and params['time'] and params['species'] and params['timeline']:
+				mapImg = self.wms.getMap(params['species'],params['timeline'],params['time'],params)
+
+				output = StringIO.StringIO()
+				mapImg.write(output)
+				self.write(output.getvalue())
+
+			else:
+				self.write("invalid request")
+
+		except:
+			print "Unexpected error:", sys.exc_info()[0]
+			traceback.print_exc(file=sys.stdout)
+		finally:
+			self.finish()
+
 
 class webServer:
 
@@ -75,13 +113,15 @@ class webServer:
 		for c in cl:
 			c.write_message(data)
 
-	def runWebServer(self,cntrl):
+	def runWebServer(self,cntrl,wms):
 		ApiHandler.controller = cntrl
 		SocketHandler.controller = cntrl
+		WMSHandler.wms = wms
 
 		app = web.Application([
 			(r'/ws', SocketHandler),
 			(r'/api', ApiHandler),
+			(r'/wms', WMSHandler),
 			(r'/(.*)', web.StaticFileHandler, {'path': "data/web", "default_filename": "index.html"})
 		],
 		debug=True)

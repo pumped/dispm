@@ -1,0 +1,81 @@
+MAP
+    NAME "WMS-Mapserver"
+    STATUS ON
+    SIZE 1542 2523
+    #EXTENT 143.91 -20 148 -15
+    #EXTENT -180 -90 180 90
+    EXTENT 16078473 -2203421 16365455 -1723647
+    UNITS DD
+    SHAPEPATH "/media/ramfs"
+
+    TRANSPARENT ON
+    IMAGECOLOR 0 255 255
+    IMAGEQUALITY 95
+    IMAGETYPE png
+
+    PROJECTION
+        "init=epsg:3857"
+    END
+
+    #
+    # Start of web interface definition
+    #
+    WEB
+        METADATA
+            "wms_title"           "WMS-MapServer"
+            "wms_onlineresource"  ""
+            "wms_enable_request" "*"
+            "wms_srs"             "EPSG:4269 EPSG:4326 EPSG:3857"
+        END
+    END # WEB
+
+    #
+    # Start of layer definitions
+    #
+    LAYER
+        NAME 'dispersal'
+        TYPE RASTER
+        STATUS DEFAULT
+        DATA "/media/ramfs/runs/siam-1/agg0.asc"
+        PROJECTION
+            "init=epsg:4326"
+        END
+        CLASSITEM "[pixel]"
+        OFFSITE 0 0 0
+        TRANSPARENCY 100
+
+          # class using an EXPRESSION using only [pixel].
+          CLASS
+            EXPRESSION ([pixel] = 1)
+            STYLE
+              OPACITY 50
+              COLOR 255 250 100
+            END
+          END
+          CLASS
+            EXPRESSION ([pixel] = 2)
+            STYLE
+              OPACITY 80
+              COLOR 255 200 60
+            END
+          END
+          CLASS
+            EXPRESSION ([pixel] = 3)
+            STYLE
+              OPACITY 100
+              COLOR 255 30 30
+            END
+          END
+
+    END # LAYER
+
+
+    OUTPUTFORMAT
+      NAME "png"
+      DRIVER AGG/PNG
+      MIMETYPE "image/png"
+      IMAGEMODE RGBA
+      TRANSPARENT ON
+      EXTENSION "png"
+    END
+END # MAP

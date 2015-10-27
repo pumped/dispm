@@ -108,7 +108,7 @@ class ModelManager():
 							renderedFile = Config.renderedPath + ids["run"] + "/agg" + time + ".png"
 
 							#render map
-							self.mapGenerator.renderFile(runFile,renderedFile)
+							#self.mapGenerator.renderFile(runFile,renderedFile)
 
 							#emit
 							self.emit('{"event":"time_rendered","data":{"speciesID":"'+speciesID+'","timelineID":"'+timelineID+'","time":'+time+'}}')

@@ -2,6 +2,7 @@ from Controller import Controller
 from server import *
 from bottle import static_file, route, run
 from logger import *
+from WMS import WMS
 import time
 
 if __name__ == "__main__":
@@ -12,8 +13,12 @@ if __name__ == "__main__":
 		controller.daemon = True
 		controller.start()
 
+		wms = WMS()
+		wms.daemon = True
+		wms.start()
+
 		ws = webServer()
-		ws.runWebServer(controller)
+		ws.runWebServer(controller, wms)
 		controller.onMessage(ws.emit)
 
 		#wait for termination
@@ -28,3 +33,4 @@ if __name__ == "__main__":
 	# 	print ex
 	finally:
 		controller.stop()
+		wms.stop()
