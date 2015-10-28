@@ -3,6 +3,9 @@ import pyinotify
 import Queue
 import mapscript
 import fileinput, os, sys
+import bencode, hashlib
+import StringIO
+import math
 #from logger import *
 
 class StoppableThread(threading.Thread):
@@ -25,8 +28,9 @@ class WMS(StoppableThread):
     def __init__(self):
         super(WMS,self).__init__()
         self.renderQueue = Queue.Queue()
-        self.outputPath = "/var/www/map/imgs/"
+        self.cachePath = "data/cache/"
         self.path = "/media/ramfs/runs/"
+        self.cacheID = 0
 
     def __del__(self):
         pass
@@ -40,6 +44,7 @@ class WMS(StoppableThread):
             try:
                 #wait for new file
                 args = self.renderQueue.get(block=True,timeout=1)
+
 
                 #do WMS-y things
 
@@ -58,13 +63,80 @@ class WMS(StoppableThread):
         #delete everything
         pass
 
+    def __getIdentifier(self,params,filename=True):
+        pString = params['timeline']+params['species']+params['height']+params['width']
+        pString+= str(params['bbox'])[1:-1]
+
+        if filename:
+            pString+=params['time']
+
+        idHash = hashlib.md5(pString).hexdigest()
+        return idHash
+
+    def __checkCache(self,params):
+        ID = self.__getIdentifier(params,False)
+
+        if (self.cacheID == ID):
+            return True
+        else:
+            self.cacheID = ID
+            return False
+
+    def __getFilename(self,params):
+        return self.cachePath + str(self.__getIdentifier(params)) +".png"
+
+    def __processParams(self,params):
+
+        bbox = params['bbox'].split(",")
+        for i in xrange(len(bbox)):
+            bbox[i] = int(float(bbox[i]))
+
+        params['bbox'] = bbox
+
+        return params
+
     #public method to add a file to the render queue
-    def getMap(self, speciesID, timelineID, time, params=[]):
-        self.renderQueue.put([speciesID,timelineID,time, params])
-        return self.generateMap(params)
+    def getMap(self,wmsParams=[]):
+
+        output = StringIO.StringIO()
+
+        params = self.__processParams(wmsParams)
+
+        #check cache
+        noCache = False
+        if self.__checkCache(params):
+            ##load it from cache
+            try:
+                with open(self.__getFilename(params),'r') as file:
+                    print "from cache"
+                    output.write(file.read())
+            except IOError:
+                noCache=True
+
+            mapImg = False
+        else:
+            noCache = True
+
+        if noCache:
+            time = int(params['time'])
+            times = range(0,30)
+            if time in times:
+                times.remove(time)
+            else:
+                return false
+
+            self.renderQueue.put({"params":params,"range":times})
+            mapImg = self.__generateMap(params)
+            mapImg.write(output)
+            del mapImg
+
+        imgOutput = output.getvalue()
+        del output
+
+        return imgOutput
         # print "Queued: " + inputFile
 
-    def generateMap(self,params):
+    def __generateMap(self,params):
         i=int(params['time'])
 
         mapfile = 'WMS/static.map'
@@ -72,18 +144,40 @@ class WMS(StoppableThread):
 
         width = int(float(params['width']))
         height = int(float(params['height']))
+        species = params['species']
+        timeline = params['timeline']
+        identifier = species+"-"+timeline
 
         m.setSize(width,height)
-        #large 16094657.112754999,-2030855.404508848,16366008.563167373,-1857343.3503014978
-        #small 16258461.66437013, -1983693.758056894, 16260907.649275256, -1981247.7731517684
-        #16229014.299223267, -2036989.4760287334, 16274226.801453948, -2006452.8832288054
 
-        ext = params['bbox'].split(',')
-        m.setExtent(float(ext[0]),float(ext[1]),float(ext[2]),float(ext[3]))
+        m.setExtent(params['bbox'][0],params['bbox'][1],params['bbox'][2],params['bbox'][3])
+
+        layerParams = self._findLayerParams(identifier,i)
+        if not layerParams:
+            print "WMS: no layer data found"
+            return False
 
         layer = m.getLayerByName("dispersal")
-        layer.data = "/media/ramfs/runs/siam-1/aggs/agg"+str(i)+".asc"
+        layer.data = layerParams[0]
+        layer.setProjection(layerParams[1])
 
-        savepath = "/var/www/map/imgs/siam-1/agg"+str(i)+".png"
+        savepath = self.__getFilename(params)
+        mapImg = m.draw()
+        mapImg.save(savepath)
+
+        del m
+
         print "Rendered: " + str(i)
-        return m.draw()
+        return mapImg
+
+    def _findLayerParams(self,identifier,i):
+        ascPath = "/media/ramfs/runs/"+identifier+"/aggs/agg"+str(i)+".asc"
+        tifPath = "/media/scratch/imgs/"+identifier+"/agg"+str(i)+".tif"
+
+        if os.path.isfile(ascPath):
+            return [ascPath,"init=epsg:4326"]
+
+        if os.path.isfile(tifPath):
+            return [tifPath,"init=epsg:3857"]
+
+        return false

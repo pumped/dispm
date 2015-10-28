@@ -90,11 +90,12 @@ class WMSHandler(web.RequestHandler):
 			params['timeline'] = self.get_argument("timeline",default=None)
 
 			if params['bbox'] and params['width'] and params['height'] and params['time'] and params['species'] and params['timeline']:
-				mapImg = self.wms.getMap(params['species'],params['timeline'],params['time'],params)
+				output = self.wms.getMap(params)
+				if output:
 
-				output = StringIO.StringIO()
-				mapImg.write(output)
-				self.write(output.getvalue())
+					self.write(output)
+				else:
+					self.write("failed")
 
 			else:
 				self.write("invalid request")

@@ -8,6 +8,7 @@ import subprocess
 import json
 from DataStore import StatManager
 from MapRenderer import MapGenerator
+from MapArchiver import MapArchiver
 
 class ModelManager():
 
@@ -22,6 +23,8 @@ class ModelManager():
 		self.statStore = StatManager()
 		self.mapGenerator = MapGenerator()
 		self.mapGenerator.start()
+		self.archiver = MapArchiver()
+		self.archiver.start()
 
 	def __del__(self):
 		self.mapGenerator.stop()
@@ -85,9 +88,13 @@ class ModelManager():
 			#capture output
 			while True:
 				output = proc.stdout.readline()
+
+				#exit if process finished
 				if output == '' and proc.poll() is not None:
 					self.emit('{"event":"model_complete"}')
 					break
+
+				#process output
 				if output:
 					result = self.processOutput(output.strip())
 					if result:
@@ -105,10 +112,11 @@ class ModelManager():
 
 						if result[0] == self.STEPWRITTEN:
 							runFile = inputPath + "aggs/agg" + time + ".asc"
-							renderedFile = Config.renderedPath + ids["run"] + "/agg" + time + ".png"
+							renderedFile = Config.rasterPath + ids["run"] + "/agg" + time + ".tif"
 
 							#render map
 							#self.mapGenerator.renderFile(runFile,renderedFile)
+							self.archiver.convertFile(runFile,renderedFile)
 
 							#emit
 							self.emit('{"event":"time_rendered","data":{"speciesID":"'+speciesID+'","timelineID":"'+timelineID+'","time":'+time+'}}')
@@ -142,6 +150,7 @@ class ModelManager():
 					#process output
 					statsJson = parts[1].strip()
 					stats = json.loads(statsJson)
+					print statsJson
 
 					return [self.STEPWRITTEN,fileNumber, stats]
 
@@ -156,7 +165,6 @@ class ModelManager():
 					#process output
 					statsJson = parts[1].strip()
 					stats = json.loads(statsJson)
-					print statsJson
 
 					return [self.STEPCOMPLETE,fileNumber, stats]
 		if line.startswith(self.MODELCOMPLETE):
@@ -190,19 +198,28 @@ class ModelManager():
 		src = Config.initialFiles + '/dist_p.asc'
 		dmDest = dest + '/dist_p.asc'
 
-		distCmd = 'gdal_rasterize -burn 1 -a_nodata 0 -init 0 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM distribution WHERE species = \'siam\'" -of GTiff '+dest+'/dist.tif'
+		distTifPath = dest+'/dist.tif'
+		distAscPath = dest+"/dist_p.asc"
+		distCmd = 'gdal_rasterize -burn 1 -a_nodata 0 -init 0 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM distribution WHERE species = \'siam\'" -of GTiff '+distTifPath
 		distCmd += " ; "
-		distCmd += "gdal_translate -a_nodata -9999 -of AAIGrid "+dest+"/dist.tif "+dest+"/dist_p.asc"
+		distCmd += "gdal_translate -a_nodata -9999 -of AAIGrid "+distTifPath+" "+distAscPath
 		proc = subprocess.Popen(distCmd, stdout=subprocess.PIPE, bufsize=0, shell=True)
 
 		#rasterize Control Mechanisms
-		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE time >= 0" -of GTiff '+dest+'/adjust.tif', shell=True)
+		adjustTifPath = dest+'/adjust.tif'
+		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE time >= 0" -of GTiff '+adjustTifPath, shell=True)
 
 		#merge rasters
-		status = subprocess.call('gdal_merge.py -a_nodata -9999 -n -9999 '+self.getDataPath()+'/max_pre1.tif '+dest+'/adjust.tif -o '+dest+'/merged.tif', shell=True)
+		mergedTifPath = dest+'/merged.tif'
+		status = subprocess.call('gdal_merge.py -a_nodata -9999 -n -9999 '+self.getDataPath()+'/max_pre1.tif '+adjustTifPath+' -o '+mergedTifPath, shell=True)
 
 		#translate to AAIGrid
-		status = subprocess.call('gdal_translate -a_nodata -9999 -of AAIGrid '+dest+'/merged.tif '+dest+'/max_pre1.asc', shell=True)
+		maxPath = dest+'/max_pre1.asc'
+		status = subprocess.call('gdal_translate -a_nodata -9999 -of AAIGrid '+mergedTifPath+' '+maxPath, shell=True)
+
+		#cleanup intermediary files
+		os.remove(mergedTifPath)
+		os.remove(adjustTifPath)
 
 		#wait for distribution to finish
 		while True:
@@ -213,6 +230,8 @@ class ModelManager():
 			if output:
 				print output
 
+		#cleanup intermediary file
+		os.remove(distTifPath)
 
 		#copy initial distribution map over
 		# src = Config.initialFiles + '/dist_p.asc'
