@@ -28,9 +28,11 @@ class ModelManager():
 
 	def __del__(self):
 		self.mapGenerator.stop()
+		self.archiver.stop()
 
 	def stop(self):
 		self.mapGenerator.stop()
+		self.archiver.stop()
 
 	#run the model with a specific identifier
 	def runModel(self, ids):
@@ -198,6 +200,7 @@ class ModelManager():
 		src = Config.initialFiles + '/dist_p.asc'
 		dmDest = dest + '/dist_p.asc'
 
+		#run async, export current distribution
 		distTifPath = dest+'/dist.tif'
 		distAscPath = dest+"/dist_p.asc"
 		distCmd = 'gdal_rasterize -burn 1 -a_nodata 0 -init 0 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM distribution WHERE species = \'siam\'" -of GTiff '+distTifPath
@@ -206,20 +209,20 @@ class ModelManager():
 		proc = subprocess.Popen(distCmd, stdout=subprocess.PIPE, bufsize=0, shell=True)
 
 		#rasterize Control Mechanisms
-		adjustTifPath = dest+'/adjust.tif'
+		adjustTifPath = dest+'/ma.tif'
 		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE time >= 0" -of GTiff '+adjustTifPath, shell=True)
-
-		#merge rasters
-		mergedTifPath = dest+'/merged.tif'
-		status = subprocess.call('gdal_merge.py -a_nodata -9999 -n -9999 '+self.getDataPath()+'/max_pre1.tif '+adjustTifPath+' -o '+mergedTifPath, shell=True)
-
+		#
+		# #merge rasters
+		# mergedTifPath = dest+'/merged.tif'
+		# status = subprocess.call('gdal_merge.py -a_nodata -9999 -n -9999 '+self.getDataPath()+'/max_pre1.tif '+adjustTifPath+' -o '+mergedTifPath, shell=True)
+		#
 		#translate to AAIGrid
-		maxPath = dest+'/max_pre1.asc'
-		status = subprocess.call('gdal_translate -a_nodata -9999 -of AAIGrid '+mergedTifPath+' '+maxPath, shell=True)
-
-		#cleanup intermediary files
-		os.remove(mergedTifPath)
-		os.remove(adjustTifPath)
+		maxPath = dest+'/ma.asc'
+		status = subprocess.call('gdal_translate -a_nodata -9999 -of AAIGrid '+adjustTifPath+' '+maxPath, shell=True)
+		#
+		# #cleanup intermediary files
+		# os.remove(mergedTifPath)
+		# os.remove(adjustTifPath)
 
 		#wait for distribution to finish
 		while True:
@@ -234,9 +237,9 @@ class ModelManager():
 		os.remove(distTifPath)
 
 		#copy initial distribution map over
-		# src = Config.initialFiles + '/dist_p.asc'
-		# dmDest = dest + '/dist_p.asc'
-		# shutil.copyfile(src,dmDest)
+		src = Config.initialFiles + '/max_pre1.asc'
+		dmDest = dest + '/max_pre1.asc'
+		shutil.copyfile(src,dmDest)
 
 
 class Model():

@@ -71,8 +71,8 @@ class MapArchiver(StoppableThread):
 
     #public method to add a file to the render queue
     def convertFile(self, inputFile, outputFile):
-        print inputFile
-        print outputFile
+        # print inputFile
+        # print outputFile
         self.renderQueue.put([inputFile,outputFile])
         # print "Queued: " + inputFile
 

@@ -60,7 +60,7 @@ MAP
             END
           END
           CLASS
-            EXPRESSION ([pixel] = 3)
+            EXPRESSION ([pixel] >= 3)
             STYLE
               OPACITY 100
               COLOR 0 0 0

@@ -46,21 +46,22 @@ MAP
 
           # class using an EXPRESSION using only [pixel].
           CLASS
-            EXPRESSION ([pixel] = 1)
+            EXPRESSION (([pixel] > 0.1) AND ([pixel] < 2))
             STYLE
               OPACITY 50
               COLOR 255 250 100
             END
           END
+
           CLASS
-            EXPRESSION ([pixel] = 2)
+            EXPRESSION (([pixel] >= 2) AND ([pixel] < 2.5))
             STYLE
               OPACITY 80
               COLOR 255 200 60
             END
           END
           CLASS
-            EXPRESSION ([pixel] = 3)
+            EXPRESSION (([pixel] >= 2.5) AND ([pixel] < 50))
             STYLE
               OPACITY 100
               COLOR 255 30 30

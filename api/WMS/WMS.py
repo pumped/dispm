@@ -106,13 +106,13 @@ class WMS(StoppableThread):
         noCache = False
         if self.__checkCache(params):
             ##load it from cache
-            try:
-                with open(self.__getFilename(params),'r') as file:
-                    print "from cache"
-                    output.write(file.read())
-            except IOError:
-                noCache=True
-
+            # try:
+            #     with open(self.__getFilename(params),'r') as file:
+            #         print "from cache"
+            #         output.write(file.read())
+            # except IOError:
+            #     noCache=True
+            noCache = True
             mapImg = False
         else:
             noCache = True
