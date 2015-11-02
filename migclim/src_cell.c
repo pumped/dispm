@@ -46,7 +46,7 @@ bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
   pxlSizeFactor = 1;
   sourceFound = false;
   anySource = false;
-        
+
   /*
   ** Search for a potential source cell. i and j are the coordinates of the
   ** sink cell. k and l are the coordinates of the potential source cell.
@@ -128,19 +128,24 @@ bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
 		** and sink pixel. We check this last as it requires significant
 		** computing time.
 		*/
-		if (useBarrier)
-		{
-		  if (!mcIntersectsBarrier (i, j, k, l, barriers))
-		  {
-		    sourceFound = true;
-		    goto End_of_Routine;
-		  }
-		}
-		else
-		{
-		  sourceFound = true;
-		  goto End_of_Routine;
-		}
+					if (srcPixel(k, l, i, j, loopID-100, false)) { //check if we need to block it
+						if (useBarrier)
+						{
+						  if (!mcIntersectsBarrier (i, j, k, l, barriers))
+						  {
+						    sourceFound = true;
+						    goto End_of_Routine;
+						  }
+						}
+						else
+						{
+						  sourceFound = true;
+						  goto End_of_Routine;
+						}
+					} else {
+						sourceFound = false;
+						goto End_of_Routine;
+					}
 	      }
 	    }
 	  }
@@ -148,7 +153,7 @@ bool mcSrcCell (int i, int j, int **curState, int **pxlAge, int loopID,
       }
     }
   }
-    
+
  End_of_Routine:
   /*
   ** Return the result.

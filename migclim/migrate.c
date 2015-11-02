@@ -207,6 +207,9 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
             goto End_of_Routine;
         }
 
+        //remove initial occurences
+        removeInitial(currentState);
+
         /* Barrier options */
         for (i = 0; i < nrRows; i++)
         {
@@ -573,7 +576,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                                         rndPixel.col = rndPixel.col + j;
 
                                         /* Now we check if this random cell is a suitable sink cell.*/
-                                        if (mcSinkCellCheck (rndPixel, currentState, habSuitability) && checkSuitability(rndPixel.row,rndPixel.col,true))
+                                        if (mcSinkCellCheck (rndPixel, currentState, habSuitability) && srcPixel(i,j,rndPixel.row,rndPixel.col,dispStep,true))
                                         {
 
                                             /* if condition is true, the pixel gets colonized.*/
@@ -652,13 +655,23 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 end = clock();
                 time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
                 //fprintf(f,"%lf\n",time_spent);
-                printf("Step %d completed by proc(%i) in %lf \n",dispStep,procID,time_spent);
+                //printf("Step %d completed by proc(%i) in %lf \n",dispStep,procID,time_spent);
 
                 //increment step tracker
                 if (incrementStepComplete(dispStep-1)) {
                   //print summary
                   int avgColonised = sum(dispStep-1);
-                  printf("StepComplete %i : {\"time\":%lf,\"occupied\":%i,\"new\":%i}\n",dispStep-1,time_spent,avgColonised,nrStepColonized);
+                  int d_range = managementImpacts[dispStep-1][DELIMITATION][procID-1];
+                  int p_range = managementImpacts[dispStep-1][PREVENTION][procID-1];
+                  int r_range = managementImpacts[dispStep-1][REMOVAL][procID-1];
+                  int c_range = managementImpacts[dispStep-1][CONTAINMENT][procID-1];
+                  int ic_range = managementImpacts[dispStep-1][IMPACT_CONTROL][procID-1];
+                  int ap_range = managementImpacts[dispStep-1][ASSET_PROTECTION][procID-1];
+
+                  char impactStr[128];
+                  sprintf(impactStr,"\"d_range\":%i,\"p_range\":%i,\"r_range\":%i,\"c_range\":%i,\"ic_range\":%i,\"ap_range\":%i",d_range,p_range,r_range,c_range,ic_range,ap_range);
+                  //printf("%s",impactStr);
+                  printf("StepComplete %i : {\"time\":%lf,\"occupied\":%i,\"new\":%i,%s}\n",dispStep-1,time_spent,avgColonised,nrStepColonized,impactStr);
                 }
 
 
@@ -782,18 +795,56 @@ End_of_Routine:
 
 
 
+bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd) {
 
-bool checkSuitability(int i, int j, bool ldd) {
-  //printf("%i\n",managementActions[i,j]);
-
-  if (managementActions[i][j] == 5) {
+  //if src pixel is contained
+  if (managementActions[srcX][srcY] == CONTAINMENT) {
+    if (managementActions[tX][tY] == CONTAINMENT) {
+      return true;
+    }
+    //record the block
+    managementImpacts[dispStep-1][CONTAINMENT][procID-1]++;
     return false;
   }
 
+  if (managementActions[tX][tY] == ASSET_PROTECTION) {
+    managementImpacts[dispStep-1][ASSET_PROTECTION][procID-1]++;
+    return false;
+  }
+
+  if (managementActions[tX][tY] == IMPACT_CONTROL) {
+    managementImpacts[dispStep-1][IMPACT_CONTROL][procID-1]++;
+  }
+
+
+  return true;
+}
+
+bool checkSuitability(int i, int j, bool ldd) {
+  //printf("%i\n",managementActions[i,j]);
+/*  if (managementActions[i][j] == ASSET_PROTECTION) {
+    return false;
+  }
+*/
   //determine costs
   return true;
 }
 
+void removeInitial(int **currentState) {
+  int m,n;
+  for (m = 0; m < nrRows; m++) {
+    for (n = 0; n < nrCols; n++) {
+      if (managementActions[m][n] == REMOVAL && currentState[m][n] > 0) {
+        currentState[m][n] = 0;
+        managementImpacts[0][REMOVAL][procID-1]++;
+      } else if (managementActions[m][n] == DELIMITATION) {
+        managementImpacts[0][DELIMITATION][procID-1]++;
+      } else if (managementActions[m][n] == PREVENTION) {
+        managementImpacts[0][PREVENTION][procID-1]++;
+      }
+    }
+  }
+}
 
 
 

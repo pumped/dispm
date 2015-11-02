@@ -27,6 +27,7 @@ int procCount = 0;
 pid_t child_pid, wpid;
 int status = 0;
 int i;
+int numActions = 6;
 
 char const *outputDirectory;
 bool quit = false;
@@ -59,6 +60,12 @@ int main( int argc, char const *argv[] ) {
 
     //setup management Actions
     readManagementActions(inputDirectory);
+    //setup output array
+    setupManagementArray();
+    printf("Setup Management Array\n");
+    indexManagementArray();
+    zeroManagementArray();
+    printf("Zeroed Management Array\n");
 
 		indexAggregates();
 		zeroAggregates();
@@ -79,6 +86,12 @@ int main( int argc, char const *argv[] ) {
 	        		//attach aggregates
 	        		aggregates_data = shmat(shmid2, NULL, 0);
 	        		indexAggregates();
+
+              //attach management outcomes
+              managementImpacts_data = shmat(shmMAID, NULL, 0); //attach for parent
+              indexManagementArray();
+
+
 	        		/* run dispersal model */
 					mcMigrate(&param, &nrFiles, inputDirectory, outputDirectory);
 
@@ -247,31 +260,73 @@ void deleteLock(char const *lockPath) {
 
 void setupStepCompleteArray() {
 	//create semaphore and shared memory
-    stepComplete_shmkey = ftok ("/dev/null", 5);
-    stepComplete_shmid = shmget (stepComplete_shmkey, dispSteps*sizeof (int), 0644 | IPC_CREAT);
-    if (stepComplete_shmid < 0){  perror ("shmget\n"); exit (1); } //exit on error
-    //shmctl (stepComplete_shmid , IPC_RMID , 0);
-    stepComplete = (int *) shmat (stepComplete_shmid, 0, 0);   /* attach p to shared memory */
+  stepComplete_shmkey = ftok ("/dev/null", 5);
+  stepComplete_shmid = shmget (stepComplete_shmkey, dispSteps*sizeof (int), 0644 | IPC_CREAT);
+  if (stepComplete_shmid < 0){  perror ("shmget\n"); exit (1); } //exit on error
+  stepComplete = (int *) shmat (stepComplete_shmid, 0, 0);   /* attach p to shared memory */
+  shmctl (stepComplete_shmid , IPC_RMID , 0);
 
-    //open sem and set auto unlink
-    stepCompleteLock = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1);
-    sem_unlink ("pSem");
+  //open sem and set auto unlink
+  stepCompleteLock = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1);
+  sem_unlink ("pSem");
 
-    //create semaphore and shared memory
-    written_shmkey = ftok ("/dev/null", 6);
-    written_shmid = shmget (written_shmkey, dispSteps*sizeof (int), 0644 | IPC_CREAT);
-    if (written_shmid < 0){  perror ("shmget\n"); exit (1); } //exit on error
-    //shmctl (stepComplete_shmid , IPC_RMID , 0);
-    written = (int *) shmat (written_shmid, 0, 0);
+  //create semaphore and shared memory
+  written_shmkey = ftok ("/dev/null", 6);
+  written_shmid = shmget (written_shmkey, dispSteps*sizeof (int), 0644 | IPC_CREAT);
+  if (written_shmid < 0){  perror ("shmget\n"); exit (1); } //exit on error
+  written = (int *) shmat (written_shmid, 0, 0);
+  shmctl (stepComplete_shmid , IPC_RMID , 0);
 
-    int m;
-    for (m=0; m < dispSteps; m++) {
+  int m;
+  for (m=0; m < dispSteps; m++) {
 		written[m] = false;
 	}
 
-    writeSynchroniser = sem_open ("writeSyncSem", O_CREAT | O_EXCL, 0644, 1);
-    sem_unlink("writeSyncSem");
+  writeSynchroniser = sem_open ("writeSyncSem", O_CREAT | O_EXCL, 0644, 1);
+  sem_unlink("writeSyncSem");
+}
 
+void setupManagementArray() {
+  shmMAID = shmget(IPC_PRIVATE, dispSteps*numActions*NUMPROC * sizeof managementImpacts[0], IPC_CREAT | 0700);
+  managementImpacts_data = shmat(shmMAID, NULL, 0); //attach for parent
+  shmctl (shmMAID , IPC_RMID , 0);
+}
+
+void indexManagementArray() {
+  /* Index Aggregates for easier access */
+	int i,j,k;
+  managementImpacts = (int***)malloc(dispSteps * sizeof(int**));
+
+	for (i=0; i < dispSteps; i++) {
+		managementImpacts[i] = (int**)malloc(numActions * sizeof(int*));
+		for (j=0; j < numActions; j++) {
+			managementImpacts[i][j] =  (int*)(managementImpacts_data + (i * numActions * NUMPROC) + (j * NUMPROC));
+		}
+	}
+}
+
+void deIndexManagementArray() {
+  int i,j;
+  if (managementImpacts != NULL) {
+    for (i = 0; i < dispSteps; i++) {
+      free(managementImpacts[i]);
+    }
+    free(managementImpacts);
+  }
+}
+
+void zeroManagementArray() {
+  int i,j,k;
+
+  printf("Zeroing\n");
+
+  for (i=0; i < dispSteps; i++) {
+		for (j=0; j < numActions; j++) {
+			for (k=0; k < NUMPROC; k++) {
+        managementImpacts[i][j][k] = 0;
+      }
+		}
+	}
 }
 
 void cleanupStepCompleteArray() {

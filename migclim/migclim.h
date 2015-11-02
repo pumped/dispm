@@ -35,6 +35,12 @@
 #define WEAK_BARRIER   1
 #define STRONG_BARRIER 2
 
+#define DELIMITATION 0
+#define PREVENTION 1
+#define REMOVAL 2
+#define CONTAINMENT 3
+#define IMPACT_CONTROL 4
+#define ASSET_PROTECTION 5
 
 /*
 ** Global variables (we just use many global var's here to avoid passing too
@@ -97,11 +103,19 @@ void zeroAggregates();
 
 void readManagementActions(char const *inputDir);
 bool checkSuitability(int i, int j, bool ldd);
+bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd);
+void removeInitial(int **currentState);
 
-
+int shmMAID;
+int ***managementImpacts;
+int *managementImpacts_data;
 void setupStepCompleteArray();
 void cleanupStepCompleteArray();
 bool incrementStepComplete(int i);
+void setupManagementArray();
+void indexManagementArray();
+void deIndexManagementArray();
+void zeroManagementArray();
 
 void writeThread();
 
