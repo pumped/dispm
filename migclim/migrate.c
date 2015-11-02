@@ -486,8 +486,9 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                         /* 1. Test whether the pixel is a suitable sink (i.e., its habitat
                         **    is suitable, it's unoccupied and is not on a barrier or filter
                         **    pixel). */
-                        if ((habSuitability[i][j] > 0) && (currentState[i][j] <= 0)) habIsSuitable = true;
+                        if ((habSuitability[i][j] > 0) && (currentState[i][j] <= 0) && checkSuitability(i,j,false)) habIsSuitable = true;
 
+                        //set state from previous state
                         if (currentState[i][j] >= 1) {
                             aggregates[dispStep-1][i][j]++;
                         }
@@ -572,11 +573,14 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                                         rndPixel.col = rndPixel.col + j;
 
                                         /* Now we check if this random cell is a suitable sink cell.*/
-                                        if (mcSinkCellCheck (rndPixel, currentState, habSuitability))
+                                        if (mcSinkCellCheck (rndPixel, currentState, habSuitability) && checkSuitability(rndPixel.row,rndPixel.col,true))
                                         {
 
                                             /* if condition is true, the pixel gets colonized.*/
                                             currentState[rndPixel.row][rndPixel.col] = loopID;
+
+                                            //include ldd state
+                                            aggregates[dispStep-1][i][j]++;
                                             nrStepColonized++;
                                             nrStepLDDSuccess++;
 
@@ -727,13 +731,6 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
 
     } /* end of "RepLoop" */
 
-    // write out aggregates file
-   /* sprintf(fileName, "%s/%s_agg1.asc", outputDir, simulName2);
-    if (writeMat (fileName, aggregates[0]) == -1)
-    {
-        *nrFiles = -1;
-        goto End_of_Routine;
-    }*/
 
     /* Set the number of output files created. */
     *nrFiles = envChgSteps;
@@ -782,6 +779,20 @@ End_of_Routine:
 
 }
 
+
+
+
+
+bool checkSuitability(int i, int j, bool ldd) {
+  //printf("%i\n",managementActions[i,j]);
+
+  if (managementActions[i][j] == 5) {
+    return false;
+  }
+
+  //determine costs
+  return true;
+}
 
 
 

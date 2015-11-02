@@ -52,6 +52,7 @@ extern bool    useBarrier, fullOutput;
 int ***aggregates;
 int *aggregates_data;
 int shmid2;
+int **managementActions;
 
 key_t stepComplete_shmkey;
 int stepComplete_shmid;
@@ -93,6 +94,9 @@ void proc_wait();
 void indexAggregates();
 void deIndexAggregates();
 void zeroAggregates();
+
+void readManagementActions(char const *inputDir);
+bool checkSuitability(int i, int j, bool ldd);
 
 
 void setupStepCompleteArray();

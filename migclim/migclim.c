@@ -49,7 +49,7 @@ int main( int argc, char const *argv[] ) {
 
     	printf("Allocating Memory \n");
 
-    	//setup aggregates shared memory
+    //setup aggregates shared memory
 		shmid2 = shmget(IPC_PRIVATE, nrRows*nrCols*dispSteps * sizeof aggregates_data[0], IPC_CREAT | 0700);
 		aggregates_data = shmat(shmid2, NULL, 0); //attach for parent
 		shmctl (shmid2 , IPC_RMID , 0);
@@ -57,6 +57,8 @@ int main( int argc, char const *argv[] ) {
 		//setup write tracker
 		setupStepCompleteArray();
 
+    //setup management Actions
+    readManagementActions(inputDirectory);
 
 		indexAggregates();
 		zeroAggregates();
@@ -328,6 +330,20 @@ void deIndexAggregates() {
         }
         free(aggregates);
     }
+}
+
+void readManagementActions(char const *inputDir) {
+  char fileName[128];
+  managementActions = NULL;
+
+  managementActions = (int **)malloc (nrRows * sizeof (int *));
+  for (i = 0; i < nrRows; i++)
+  {
+      managementActions[i] = (int *)malloc (nrCols * sizeof (int));
+  }
+
+  sprintf(fileName, "%s%s.asc", inputDir, "ma");
+  readMat(fileName,managementActions);
 }
 
 void proc_wait() {
