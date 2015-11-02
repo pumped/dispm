@@ -222,7 +222,7 @@ class ModelManager():
 		#
 		# #cleanup intermediary files
 		# os.remove(mergedTifPath)
-		# os.remove(adjustTifPath)
+		os.remove(adjustTifPath)
 
 		#wait for distribution to finish
 		while True:
