@@ -163,11 +163,13 @@ class WMS(StoppableThread):
 
         savepath = self.__getFilename(params)
         mapImg = m.draw()
-        mapImg.save(savepath)
+        #mapImg.save(savepath)
 
         del m
+        del layer
+        del layerParams
 
-        print "Rendered: " + str(i)
+        print "Rendered: " + str(identifier) + ", " + str(i)
         return mapImg
 
     def _findLayerParams(self,identifier,i):
@@ -180,4 +182,4 @@ class WMS(StoppableThread):
         if os.path.isfile(tifPath):
             return [tifPath,"init=epsg:3857"]
 
-        return false
+        return False

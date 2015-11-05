@@ -48,7 +48,7 @@ class ModelManager():
 			if not Config.debug:
 				return 0 #mark as completed already
 
-		self.__writeInputFiles(ids["run"])
+		self.__writeInputFiles(ids)
 		log.debug('Input files written')
 		self.__setupParamaterFile({'id':ids["run"]})
 		log.debug('Paramater files written')
@@ -126,6 +126,8 @@ class ModelManager():
 						if result[0] == self.MODELCOMPLETE:
 							pass
 							#self.emit('{"event":"model_complete"}')
+			#cleanup
+			self.cleanupDirectory(path)
 
 		else: #running remotely using dispy
 			jobs = []
@@ -136,6 +138,11 @@ class ModelManager():
 			n = job()
 			log.debug('job %s at %s with %s' % (job.id, job.start_time, n))
 			log.info(job.stdout)
+
+	def cleanupDirectory(self,path):
+		os.remove(path + "/ma.asc")
+		os.remove(path + "/max_pre1.asc")
+		os.remove(path + "/dist_p.asc")
 
 	def processOutput(self,output):
 		line = output.lower()
@@ -193,8 +200,8 @@ class ModelManager():
 		else:
 			raise DirectoryExists
 
-	def __writeInputFiles(self, id):
-		dest = Config.runPath + '/' + str(id)
+	def __writeInputFiles(self, ids):
+		dest = Config.runPath + '/' + str(ids['run'])
 
 		#write out distribution files
 		src = Config.initialFiles + '/dist_p.asc'
@@ -210,7 +217,7 @@ class ModelManager():
 
 		#rasterize Control Mechanisms
 		adjustTifPath = dest+'/ma.tif'
-		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE time >= 0" -of GTiff '+adjustTifPath, shell=True)
+		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE timeline = \''+ids['timeline']+'\'" -of GTiff '+adjustTifPath, shell=True)
 		#
 		# #merge rasters
 		# mergedTifPath = dest+'/merged.tif'

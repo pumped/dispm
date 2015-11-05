@@ -81,6 +81,7 @@ class MapArchiver(StoppableThread):
         t0 = time.time()
 
         with open(os.devnull, 'w') as FNULL:
+            os.remove(outputFile)
             cmd = 'gdalwarp -s_srs "EPSG:4326" -t_srs "EPSG:3857" -overwrite -co COMPRESS=DEFLATE ' + inputFile + " " + outputFile
             status = subprocess.call(cmd, shell=True, stdout=FNULL)
 

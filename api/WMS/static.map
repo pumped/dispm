@@ -43,6 +43,7 @@ MAP
         CLASSITEM "[pixel]"
         OFFSITE 0 0 0
         TRANSPARENCY 100
+        PROCESSING "CLOSE_CONNECTION=ALWAYS" 
 
           # class using an EXPRESSION using only [pixel].
           CLASS
