@@ -159,7 +159,7 @@ class ModelManager():
 					#process output
 					statsJson = parts[1].strip()
 					stats = json.loads(statsJson)
-					print statsJson
+					# print statsJson
 
 					return [self.STEPWRITTEN,fileNumber, stats]
 
@@ -218,11 +218,7 @@ class ModelManager():
 		#rasterize Control Mechanisms
 		adjustTifPath = dest+'/ma.tif'
 		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE timeline = \''+ids['timeline']+'\'" -of GTiff '+adjustTifPath, shell=True)
-		#
-		# #merge rasters
-		# mergedTifPath = dest+'/merged.tif'
-		# status = subprocess.call('gdal_merge.py -a_nodata -9999 -n -9999 '+self.getDataPath()+'/max_pre1.tif '+adjustTifPath+' -o '+mergedTifPath, shell=True)
-		#
+
 		#translate to AAIGrid
 		maxPath = dest+'/ma.asc'
 		status = subprocess.call('gdal_translate -a_nodata -9999 -of AAIGrid '+adjustTifPath+' '+maxPath, shell=True)

@@ -72,8 +72,9 @@ class Controller (threading.Thread):
 				pass #no jobs yet
 			else:
 				#do processing
-				log.info('Processed Job: ' + str(job["run"]))
+				print job				
 				status = self.model.runModel(job)
+				log.info('Processed Job: ' + str(job["run"]))
 
 				if (status):
 					log.info('model run completed successfully')
