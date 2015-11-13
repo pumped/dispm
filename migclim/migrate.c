@@ -486,6 +486,21 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                         habIsSuitable = false;
                         cellInDispDist = false;
 
+                        /* Remove mature cells for impact control */
+                        if (pixelAge[i][j] >= iniMatAge) {
+                          if (managementActions[i][j] == IMPACT_CONTROL) {
+                            //delete it?
+                            double r = UNIF01;
+                            printf("%f \n",r);
+                            if (r <= 0.7) {
+                              printf("Removed \n");
+                              currentState[i][j];
+                              pixelAge[i][j] = 0;
+                              managementImpacts[dispStep-1][IMPACT_CONTROL][procID-1]++;
+                            }
+                          }
+                        }
+
                         /* 1. Test whether the pixel is a suitable sink (i.e., its habitat
                         **    is suitable, it's unoccupied and is not on a barrier or filter
                         **    pixel). */
@@ -534,6 +549,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                             ** to determine whether a pixel was in "Decolonized" or "SeedBank resilience" status. */
                             pixelAge[i][j] = 0;
                         }
+
                     }
 
                 }
@@ -792,9 +808,6 @@ End_of_Routine:
 
 }
 
-
-
-
 bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd) {
 
   //if src pixel is contained
@@ -812,9 +825,10 @@ bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd) {
     return false;
   }
 
-  if (managementActions[tX][tY] == IMPACT_CONTROL) {
+  //impact controll
+  /*if (managementActions[tX][tY] == IMPACT_CONTROL) {
     managementImpacts[dispStep-1][IMPACT_CONTROL][procID-1]++;
-  }
+  }*/
 
 
   return true;
@@ -834,9 +848,9 @@ void removeInitial(int **currentState) {
   int m,n;
   for (m = 0; m < nrRows; m++) {
     for (n = 0; n < nrCols; n++) {
-      if (managementActions[m][n] == REMOVAL && currentState[m][n] > 0) {
+      if ((managementActions[m][n] == REMOVAL || managementActions[m][n] == ASSET_PROTECTION) && currentState[m][n] > 0) {
         currentState[m][n] = 0;
-        managementImpacts[0][REMOVAL][procID-1]++;
+        managementImpacts[0][managementActions[m][n]][procID-1]++;
       } else if (managementActions[m][n] == DELIMITATION) {
         managementImpacts[0][DELIMITATION][procID-1]++;
       } else if (managementActions[m][n] == PREVENTION) {
