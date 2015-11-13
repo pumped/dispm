@@ -98,6 +98,7 @@ class ModelManager():
 
 				#process output
 				if output:
+					print output.strip()
 					result = self.processOutput(output.strip())
 					if result:
 						time = result[1]

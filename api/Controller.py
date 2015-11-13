@@ -71,8 +71,7 @@ class Controller (threading.Thread):
 			except Queue.Empty:
 				pass #no jobs yet
 			else:
-				#do processing
-				print job				
+				#do processing				
 				status = self.model.runModel(job)
 				log.info('Processed Job: ' + str(job["run"]))
 
