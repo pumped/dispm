@@ -104,7 +104,9 @@ void zeroAggregates();
 void readManagementActions(char const *inputDir);
 bool checkSuitability(int i, int j, bool ldd);
 bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd);
-void removeInitial(int **currentState);
+void removeInitial(int **currentState, int year);
+int cellAction(int srcX, int srcY, int year);
+int getTimeFromActionString(int code);
 
 int shmMAID;
 int ***managementImpacts;

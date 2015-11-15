@@ -43,7 +43,7 @@ bool mcSinkCellCheck (pixel pix, int **curState, int **habSuit);
 
 void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char const *outputDir)
 {
-    int     i, j, k, RepLoop, envChgStep, dispStep, loopID, simulTime,last;
+    int     i, j, k, RepLoop, envChgStep, dispStep, loopID, simulTime,last, action;
     bool    advOutput, habIsSuitable, cellInDispDist, tempResilience, tail;
     char    fileName[128], simulName2[128];
     FILE   *fp = NULL, *fp2 = NULL;
@@ -208,7 +208,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
         }
 
         //remove initial occurences
-        removeInitial(currentState);
+        /*removeInitial(currentState);*/
 
         /* Barrier options */
         for (i = 0; i < nrRows; i++)
@@ -462,6 +462,8 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 ** nrStepVegResRecover = 0;
                 ** nrStepSeedBankRecover = 0; */
 
+                removeInitial(currentState,dispStep);
+
                 /* Source cell search: Can the sink pixel be colonized? There are four
                 ** conditions to be met for a sink pixel to become colonized:
                 **   1. Sink pixel is currently suitable and not already colonised.
@@ -475,9 +477,6 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 ** Loop through the cellular automaton. */
                 for (i = 0; i < nrRows; i++)
                 {
-
-                    //fork
-
                     last = 0;
                     for (j = 0; j < nrCols; j++)
                     {
@@ -488,12 +487,12 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
 
                         /* Remove mature cells for impact control */
                         if (pixelAge[i][j] >= iniMatAge) {
-                          if (managementActions[i][j] == IMPACT_CONTROL) {
+                          //determine the action for this cell
+                          action = cellAction(i,j,dispStep);
+                          if (action== IMPACT_CONTROL) {
                             //delete it?
                             double r = UNIF01;
-                            printf("%f \n",r);
                             if (r <= 0.7) {
-                              printf("Removed \n");
                               currentState[i][j];
                               pixelAge[i][j] = 0;
                               managementImpacts[dispStep-1][IMPACT_CONTROL][procID-1]++;
@@ -808,11 +807,35 @@ End_of_Routine:
 
 }
 
+int cellAction(int srcX, int srcY, int year) {
+  int pAction = managementActions[srcX][srcY] / 1000;
+  int sAction = managementActions[srcX][srcY] % 10;
+
+  int switchTime = getTimeFromActionString(managementActions[srcX][srcY]);
+
+  /*if (pAction > 0) {
+    printf("%i : %i \n",pAction,switchTime);
+  }*/
+
+  if (year < switchTime) {
+    return pAction;
+  }
+  return sAction;
+}
+
+int getTimeFromActionString(int code) {
+  int switchTime = (code/10)%100;
+  return switchTime;
+}
+
 bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd) {
 
+  int action = cellAction(srcX,srcY,dispStep);
+  int tAction = cellAction(tX,tY,dispStep);
+
   //if src pixel is contained
-  if (managementActions[srcX][srcY] == CONTAINMENT) {
-    if (managementActions[tX][tY] == CONTAINMENT) {
+  if (action == CONTAINMENT) {
+    if (tAction == CONTAINMENT) {
       return true;
     }
     //record the block
@@ -820,8 +843,12 @@ bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd) {
     return false;
   }
 
-  if (managementActions[tX][tY] == ASSET_PROTECTION) {
+  if (tAction == ASSET_PROTECTION) {
     managementImpacts[dispStep-1][ASSET_PROTECTION][procID-1]++;
+    return false;
+  }
+
+  if (tAction == REMOVAL) {
     return false;
   }
 
@@ -836,25 +863,26 @@ bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd) {
 
 bool checkSuitability(int i, int j, bool ldd) {
   //printf("%i\n",managementActions[i,j]);
-/*  if (managementActions[i][j] == ASSET_PROTECTION) {
+  if (managementActions[i][j] == ASSET_PROTECTION) {
     return false;
   }
-*/
   //determine costs
   return true;
 }
 
-void removeInitial(int **currentState) {
-  int m,n;
+void removeInitial(int **currentState, int year) {
+  int m,n,action;
   for (m = 0; m < nrRows; m++) {
     for (n = 0; n < nrCols; n++) {
-      if ((managementActions[m][n] == REMOVAL || managementActions[m][n] == ASSET_PROTECTION) && currentState[m][n] > 0) {
+      action = cellAction(m,n,year);
+
+      if ((action == REMOVAL || action == ASSET_PROTECTION) && currentState[m][n] > 0) {
         currentState[m][n] = 0;
-        managementImpacts[0][managementActions[m][n]][procID-1]++;
-      } else if (managementActions[m][n] == DELIMITATION) {
-        managementImpacts[0][DELIMITATION][procID-1]++;
-      } else if (managementActions[m][n] == PREVENTION) {
-        managementImpacts[0][PREVENTION][procID-1]++;
+        managementImpacts[year-1][action][procID-1]++;
+      } else if (action == DELIMITATION) {
+        managementImpacts[year-1][DELIMITATION][procID-1]++;
+      } else if (action == PREVENTION) {
+        managementImpacts[year-1][PREVENTION][procID-1]++;
       }
     }
   }
