@@ -128,7 +128,7 @@ class ModelManager():
 							pass
 							#self.emit('{"event":"model_complete"}')
 			#cleanup
-			self.cleanupDirectory(path)
+			#self.cleanupDirectory(path)
 
 		else: #running remotely using dispy
 			jobs = []

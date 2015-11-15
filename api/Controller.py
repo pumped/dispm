@@ -37,8 +37,8 @@ class Controller (threading.Thread):
 		return str(species) + "-" + str(timeline)
 
 	#add a new job to the queue
-	def addJob(self,speciesID,timelineID):
-		ids = {"species":speciesID,"timeline":timelineID,"run":self.makeID(speciesID,timelineID)}
+	def addJob(self,speciesID,timelineID, prevention, protection):
+		ids = {"species":speciesID,"timeline":timelineID,"run":self.makeID(speciesID,timelineID),"prevention":prevention,"protection":protection}
 		self.modelQueue.put(ids)
 		return ids
 
@@ -71,7 +71,7 @@ class Controller (threading.Thread):
 			except Queue.Empty:
 				pass #no jobs yet
 			else:
-				#do processing				
+				#do processing
 				status = self.model.runModel(job)
 				log.info('Processed Job: ' + str(job["run"]))
 
