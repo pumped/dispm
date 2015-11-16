@@ -676,12 +676,28 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                 if (incrementStepComplete(dispStep-1)) {
                   //print summary
                   int avgColonised = sum(dispStep-1);
-                  int d_range = managementImpacts[dispStep-1][DELIMITATION][procID-1];
-                  int p_range = managementImpacts[dispStep-1][PREVENTION][procID-1];
-                  int r_range = managementImpacts[dispStep-1][REMOVAL][procID-1];
-                  int c_range = managementImpacts[dispStep-1][CONTAINMENT][procID-1];
-                  int ic_range = managementImpacts[dispStep-1][IMPACT_CONTROL][procID-1];
-                  int ap_range = managementImpacts[dispStep-1][ASSET_PROTECTION][procID-1];
+                  int d_range=0, p_range=0, r_range=0, c_range=0, ic_range=0, ap_range=0;
+                  int proc;
+
+                  for (proc = 0; proc < NUMPROC; proc++) {
+                    d_range += managementImpacts[dispStep-1][DELIMITATION][proc];
+                    p_range += managementImpacts[dispStep-1][PREVENTION][proc];
+                    r_range += managementImpacts[dispStep-1][REMOVAL][proc];
+                    c_range += managementImpacts[dispStep-1][CONTAINMENT][proc];
+                    ic_range += managementImpacts[dispStep-1][IMPACT_CONTROL][proc];
+                    ap_range += managementImpacts[dispStep-1][ASSET_PROTECTION][proc];
+                    //printf("IC%i: %i\n",proc,managementImpacts[dispStep-1][ASSET_PROTECTION][proc]);
+                  }
+
+                  d_range = d_range / NUMPROC;
+                  p_range = p_range / NUMPROC;
+                  r_range = r_range / NUMPROC;
+                  c_range = c_range / NUMPROC;
+                  ic_range = ic_range / NUMPROC;
+                  ap_range = ap_range / NUMPROC;
+
+                  //printf("IC: %i : %i\n",managementImpacts[dispStep-1][IMPACT_CONTROL][procID-1], procID-1);
+                  //printf("IC Averaged: %i\n",ic_range);
 
                   char impactStr[128];
                   sprintf(impactStr,"\"d_range\":%i,\"p_range\":%i,\"r_range\":%i,\"c_range\":%i,\"ic_range\":%i,\"ap_range\":%i",d_range,p_range,r_range,c_range,ic_range,ap_range);
@@ -813,10 +829,6 @@ int cellAction(int srcX, int srcY, int year) {
 
   int switchTime = getTimeFromActionString(managementActions[srcX][srcY]);
 
-  /*if (pAction > 0) {
-    printf("%i : %i \n",pAction,switchTime);
-  }*/
-
   if (year < switchTime) {
     return pAction;
   }
@@ -849,6 +861,7 @@ bool srcPixel(int srcX, int srcY, int tX, int tY, int dispStep, bool ldd) {
   }
 
   if (tAction == REMOVAL) {
+    managementImpacts[dispStep-1][REMOVAL][procID-1]++;
     return false;
   }
 
@@ -871,14 +884,23 @@ bool checkSuitability(int i, int j, bool ldd) {
 }
 
 void removeInitial(int **currentState, int year) {
-  int m,n,action;
+  int m,n,action,yr,maxYr;
   for (m = 0; m < nrRows; m++) {
     for (n = 0; n < nrCols; n++) {
       action = cellAction(m,n,year);
 
+      //if it's a removal action or an ap
       if ((action == REMOVAL || action == ASSET_PROTECTION) && currentState[m][n] > 0) {
+        //clear it
         currentState[m][n] = 0;
-        managementImpacts[year-1][action][procID-1]++;
+
+        //add charge for n years
+        maxYr = year+9;
+        if (maxYr > dispSteps) { maxYr = dispSteps; }
+        for (yr=year-1; yr < maxYr; yr++) {
+          managementImpacts[yr][action][procID-1]++;
+        }
+
       } else if (action == DELIMITATION) {
         managementImpacts[year-1][DELIMITATION][procID-1]++;
       } else if (action == PREVENTION) {

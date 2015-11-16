@@ -21,8 +21,7 @@
 
 
 
-int NUMPROC = 3;
-int MAXPROC = 3;
+
 int procCount = 0;
 pid_t child_pid, wpid;
 int status = 0;
@@ -35,6 +34,8 @@ bool quit = false;
 
 
 int main( int argc, char const *argv[] ) {
+  NUMPROC = 3;
+  MAXPROC = 3;
 
     if (argc == 4) {
 
@@ -229,18 +230,18 @@ void writeAggregateFile(int matID, char const *outputDirectory) {
 
 int sum(int matID) {
   int count = 0;
-  int occupationThreshold = NUMPROC / 2;
+  //int occupationThreshold = NUMPROC / 2;
   int j,k;
 
   for (j=0; j < nrRows; j++) {
     for (k=0; k < nrCols; k++) {
-      if (aggregates[matID][j][k] > occupationThreshold) {
-        count++;
+      if (aggregates[matID][j][k] > 0) {
+        count+= aggregates[matID][j][k];
       }
     }
   }
 
-  return count;
+  return count / NUMPROC;
 }
 
 void writeLock(char const *lockPath) {

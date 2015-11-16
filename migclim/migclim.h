@@ -42,6 +42,9 @@
 #define IMPACT_CONTROL 4
 #define ASSET_PROTECTION 5
 
+int NUMPROC;
+int MAXPROC;
+
 /*
 ** Global variables (we just use many global var's here to avoid passing too
 ** many arguments all the time).
