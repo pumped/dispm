@@ -38,8 +38,8 @@ class ApiHandler(web.RequestHandler):
 			if (r == "runModel"):
 				speciesID = self.get_argument("species",default=None)
 				timelineID = self.get_argument("timeline",default=None)
-				prevention = self.get_argument("prevention",default=None)
-				protection = self.get_argument("protection",default=None)
+				prevention = self.get_argument("prevention",default="20")
+				protection = self.get_argument("protection",default="1")
 				if speciesID and timelineID:
 					self.controller.addJob(speciesID, timelineID, prevention, protection)
 					self.write('{"status":"OK"}')

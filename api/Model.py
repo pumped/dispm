@@ -50,7 +50,7 @@ class ModelManager():
 
 		self.__writeInputFiles(ids)
 		log.debug('Input files written')
-		self.__setupParamaterFile({'id':ids["run"]})
+		self.__setupParamaterFile(ids)
 		log.debug('Paramater files written')
 
 		# #run model
@@ -184,10 +184,22 @@ class ModelManager():
 		return Config.dataPath + 'siam'
 
 	def __setupParamaterFile(self, settings):
-		newPath = Config.runPath + '/' + settings['id'] + '/params.txt'
+		newPath = Config.runPath + '/' + settings['run'] + '/params.txt'
 		fInit = open (Config.paramsFilePath, "r")
 		fNew = open(newPath, "w")
-		fNew.write(fInit.read())
+
+		for line in fInit:
+			if (line.startswith("lddFreq")):
+				print settings["prevention"]
+				if (settings["prevention"] == "20"):
+					fNew.write("lddFreq 0.05\n")
+				if (settings["prevention"] == "10"):
+					fNew.write("lddFreq 0.08\n")
+				if (settings["prevention"] == "0"):
+					fNew.write("lddFreq 0.1\n")
+			else:
+				fNew.write(line)
+
 		fInit.close()
 		fNew.close()
 
