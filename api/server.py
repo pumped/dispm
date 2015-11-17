@@ -40,8 +40,9 @@ class ApiHandler(web.RequestHandler):
 				timelineID = self.get_argument("timeline",default=None)
 				prevention = self.get_argument("prevention",default="20")
 				protection = self.get_argument("protection",default="1")
+				full = self.get_argument("full",default="1")
 				if speciesID and timelineID:
-					self.controller.addJob(speciesID, timelineID, prevention, protection)
+					self.controller.addJob(speciesID, timelineID, prevention, protection,full)
 					self.write('{"status":"OK"}')
 				else:
 					self.write("error, missing paramaters")

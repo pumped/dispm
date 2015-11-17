@@ -657,7 +657,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                         nrNoDispersal, nrColonized, nrAbsent, nrStepColonized, nrStepDecolonized, nrStepLDDSuccess);
 
                 /* If the user has requested full output, also write the current state matrix to file. */
-                if (fullOutput)
+                /*if (fullOutput)
                 {
                     sprintf (fileName, "%s/%s_step_%d.asc", outputDir, simulName2, loopID);
                     if (writeMat (fileName, currentState) == -1)
@@ -665,7 +665,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                         *nrFiles = -1;
                         goto End_of_Routine;
                     }
-                }
+                }*/
 
                 end = clock();
                 time_spent = (double)(end - begin) / CLOCKS_PER_SEC;

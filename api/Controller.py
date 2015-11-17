@@ -37,8 +37,8 @@ class Controller (threading.Thread):
 		return str(species) + "-" + str(timeline)
 
 	#add a new job to the queue
-	def addJob(self,speciesID,timelineID, prevention, protection):
-		ids = {"species":speciesID,"timeline":timelineID,"run":self.makeID(speciesID,timelineID),"prevention":prevention,"protection":protection}
+	def addJob(self,speciesID,timelineID, prevention, protection,fullRun):
+		ids = {"species":speciesID,"timeline":timelineID,"run":self.makeID(speciesID,timelineID),"prevention":prevention,"protection":protection,"full":fullRun}
 		self.modelQueue.put(ids)
 		return ids
 

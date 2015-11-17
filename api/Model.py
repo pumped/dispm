@@ -98,7 +98,7 @@ class ModelManager():
 
 				#process output
 				if output:
-					print output.strip()
+					#print output.strip()
 					result = self.processOutput(output.strip())
 					if result:
 						time = result[1]
@@ -188,8 +188,15 @@ class ModelManager():
 		fInit = open (Config.paramsFilePath, "r")
 		fNew = open(newPath, "w")
 
+		print settings
+
 		for line in fInit:
-			if (line.startswith("lddFreq")):
+			if (line.startswith("fullOutput")):
+				if (settings["full"] == "1"):
+					fNew.write("fullOutput true\n")
+				if (settings["full"] == "0"):
+					fNew.write("fullOutput false\n")
+			elif (line.startswith("lddFreq")):
 				print settings["prevention"]
 				if (settings["prevention"] == "20"):
 					fNew.write("lddFreq 0.05\n")

@@ -80,7 +80,9 @@ int main( int argc, char const *argv[] ) {
 	        if ((child_pid = fork()) == 0) { // child process
 	        		procID = i;
 	        		if (i == 0) {
-	        			writeThread();
+                if (fullOutput) {
+                  writeThread();
+                }
 	        			return(0);
 	        		}
 
