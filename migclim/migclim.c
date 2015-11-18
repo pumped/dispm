@@ -211,7 +211,7 @@ void writeAggregateFile(int matID, char const *outputDirectory) {
 	cellSize = 0.001;
 	noData = -9999;
 
-  sprintf(fileName, "%s/agg%i.asc", outputDirectory,matID);
+  sprintf(fileName, "%s/agg%i.asc", outputDirectory,matID+1);
   //sprintf(fileLCKName, "%s.LCK",fileName);
 
   //write lock
@@ -227,7 +227,7 @@ void writeAggregateFile(int matID, char const *outputDirectory) {
   int val = sum(matID);
 
   time_spent = (double)(clock() - start) / CLOCKS_PER_SEC;
-  printf("Write %i : {\"time\":%lf,\"occupied\":%i}\n",matID,time_spent,val);
+  printf("Write %i : {\"time\":%lf,\"occupied\":%i}\n",matID+1,time_spent,val);
 }
 
 int sum(int matID) {

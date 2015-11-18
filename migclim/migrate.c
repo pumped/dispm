@@ -702,7 +702,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                   char impactStr[128];
                   sprintf(impactStr,"\"d_range\":%i,\"p_range\":%i,\"r_range\":%i,\"c_range\":%i,\"ic_range\":%i,\"ap_range\":%i",d_range,p_range,r_range,c_range,ic_range,ap_range);
                   //printf("%s",impactStr);
-                  printf("StepComplete %i : {\"time\":%lf,\"occupied\":%i,\"new\":%i,%s}\n",dispStep-1,time_spent,avgColonised,nrStepColonized,impactStr);
+                  printf("StepComplete %i : {\"time\":%lf,\"occupied\":%i,\"new\":%i,%s}\n",dispStep,time_spent,avgColonised,nrStepColonized,impactStr);
                 }
 
 
