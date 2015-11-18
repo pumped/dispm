@@ -72,13 +72,90 @@ class StatStore:
 
             if len(node[key]) <= time:
                 while len(node[key]) < time:
-                    node[key].append(None)
+                    node[key].append(0)
                 node[key].append(stats[key])
             else:
                 node[key][time] = stats[key]
 
 
-        #add stats
+        #add cost stats
+        stats = {
+            "delimitation":{"id":"d_range","cost":300,"costID":"d_cost","costSumID":"d_costSum","haSum":"d_haSum"},
+            "prevention":{"id":"p_range","cost":0,"costID":"p_cost","costSumID":"p_costSum","haSum":"p_haSum"},
+            "removal":{"id":"r_range","cost":1800,"costID":"r_cost","costSumID":"r_costSum","haSum":"r_haSum"},
+            "containment":{"id":"c_range","cost":1200,"costID":"c_cost","costSumID":"c_costSum","haSum":"c_haSum"},
+            "intensiveControl":{"id":"ic_range","cost":1200,"costID":"ic_cost","costSumID":"ic_costSum","haSum":"ic_haSum"},
+            "assetProtection":{"id":"ap_range","cost":600,"costID":"ap_cost","costSumID":"ap_costSum","haSum":"ap_haSum"}
+          }
+
+        totalCost = 0
+
+        for key in stats:
+            #if the range is in the node
+            if stats[key]["id"] in node:
+
+                #get the array names
+                id = stats[key]["id"]
+                costID = stats[key]["costID"]
+                costSumID = stats[key]["costSumID"]
+                haSumID = stats[key]["haSum"]
+
+
+                #setup cost arrays in node if it doesn't exist
+                if costID not in node:
+                    node[costID] = []
+                    node[costSumID] = []
+                    node[haSumID] = []
+
+                #for each step in particular range add to cost
+                cost = 0
+                costSum = 0
+                haSum = 0
+                for i,val in enumerate(node[id]):
+                    #calculate cost and cost summary
+                    if val is not None:
+                        cost = val * stats[key]["cost"]
+                        haSum += val
+                    else:
+                        cost = 0
+                        
+                    costSum += cost
+                    totalCost += cost
+
+
+                    # if the node array isn't long enough, make it longer
+                    if len(node[costID]) <= i:
+                        while len(node[costID]) <= i:
+                            node[costID].append(0)
+                            node[costSumID].append(0)
+                            node[haSumID].append(0)
+
+
+
+                    #add it to the node
+                    node[costID][i] = cost
+                    node[costSumID][i] = costSum
+                    node[haSumID][i] = haSum
+
+        #for all of the prevention nodes
+        if (stats["prevention"]["costID"] in node):
+            preventionNode = node[stats["prevention"]["costID"]]
+            preventionSumNode = node[stats["prevention"]["costSumID"]]
+            amt = 0
+            costSum = 0
+            if "prevention" in node:
+                amt = int(node["prevention"][0])
+
+            for i,val in enumerate(preventionNode):
+                cost = ((totalCost / 100)*amt) / len(preventionNode)
+                costSum += cost
+
+                preventionNode[i] = cost
+                preventionSumNode[i] = costSum
+
+
+
+
         #print "time set: " + str(timelineID)
 
     def setStats(self,timelineID,stats):

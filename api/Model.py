@@ -80,6 +80,9 @@ class ModelManager():
 		inputPath = path + '/'
 		paramPath = path + '/params.txt'
 
+		#set prevention and protection status
+		self.statStore.updateTime(ids["species"],ids["timeline"],0,{"prevention":ids["prevention"], "protection":ids["protection"]})
+
 		#if running modelling locally
 		if (self.local):
 			cmd = "stdbuf -oL " + Config.migExecutable + " " + paramPath + " " + inputPath + " " + outputPath
@@ -107,6 +110,7 @@ class ModelManager():
 
 						if result[0] == self.STEPCOMPLETE:
 							#update stats
+							print result[2]
 							self.statStore.updateTime(speciesID,timelineID,time,result[2])
 
 							#emit
@@ -128,7 +132,7 @@ class ModelManager():
 							pass
 							#self.emit('{"event":"model_complete"}')
 			#cleanup
-			#self.cleanupDirectory(path)
+			self.cleanupDirectory(path)
 
 		else: #running remotely using dispy
 			jobs = []
