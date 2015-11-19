@@ -119,13 +119,14 @@ class WMS(StoppableThread):
 
         if noCache:
             time = int(params['time'])
-            times = range(0,30)
+            print time
+            times = range(0,31)
             if time in times:
                 times.remove(time)
             else:
-                return false
+                return False
 
-            self.renderQueue.put({"params":params,"range":times})
+            #self.renderQueue.put({"params":params,"range":times})
             mapImg = self.__generateMap(params)
             mapImg.write(output)
             del mapImg
