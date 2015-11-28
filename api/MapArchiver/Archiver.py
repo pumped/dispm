@@ -5,6 +5,7 @@ import mapscript
 import fileinput, os, sys
 import time
 import subprocess
+import shutil
 #from logger import *
 
 class StoppableThread(threading.Thread):
@@ -83,9 +84,10 @@ class MapArchiver(StoppableThread):
         with open(os.devnull, 'w') as FNULL:
             cmd = 'gdalwarp -s_srs "EPSG:4326" -t_srs "EPSG:3857" -overwrite -co COMPRESS=DEFLATE ' + inputFile + " " + outputFile
             status = subprocess.call(cmd, shell=True, stdout=FNULL)
+        #shutil.copyfile(inputFile,outputFile)
 
         t1 = time.time()
-        #print t1-t0
+        #print "Archived in: " + str(t1-t0)
 
         #cleanup
         self.cleanup(inputFile)

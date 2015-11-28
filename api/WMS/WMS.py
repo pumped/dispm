@@ -4,8 +4,9 @@ import Queue
 import mapscript
 import fileinput, os, sys
 import bencode, hashlib
-import StringIO
+from StringIO import StringIO
 import math
+import time
 #from logger import *
 
 class StoppableThread(threading.Thread):
@@ -98,7 +99,7 @@ class WMS(StoppableThread):
     #public method to add a file to the render queue
     def getMap(self,wmsParams=[]):
 
-        output = StringIO.StringIO()
+        output = StringIO()
 
         params = self.__processParams(wmsParams)
 
@@ -118,18 +119,21 @@ class WMS(StoppableThread):
             noCache = True
 
         if noCache:
-            time = int(params['time'])
-            print time
-            times = range(0,31)
-            if time in times:
-                times.remove(time)
-            else:
-                return False
+            layerTime = int(params['time'])
+            #print time
 
-            #self.renderQueue.put({"params":params,"range":times})
-            mapImg = self.__generateMap(params)
-            mapImg.write(output)
-            del mapImg
+            if layerTime >= 1:
+                #self.renderQueue.put({"params":params,"range":times})
+                mapImg = self.__generateMap(params)
+                mapImg.write(output)
+                del mapImg
+            else:
+                try:
+                    with open("WMS/blank.png", 'r') as f:
+                        output.write(f.read())
+                except:
+                    print "file doesn't exist"
+
 
         imgOutput = output.getvalue()
         del output
@@ -162,6 +166,7 @@ class WMS(StoppableThread):
         layer.data = layerParams[0]
         layer.setProjection(layerParams[1])
 
+
         savepath = self.__getFilename(params)
         mapImg = m.draw()
         #mapImg.save(savepath)
@@ -170,11 +175,11 @@ class WMS(StoppableThread):
         del layer
         del layerParams
 
-        print "Rendered: " + str(identifier) + ", " + str(i)
+        #print "Rendered: " + str(identifier) + ", " + str(i)
         return mapImg
 
     def _findLayerParams(self,identifier,i):
-        ascPath = "/media/ramfs/runs/"+identifier+"/aggs/agg"+str(i)+".asc"
+        ascPath = "/media/ramfs/runs/"+identifier+"/aggs/agg"+str(i)+".tif"
         tifPath = "/media/scratch/imgs/"+identifier+"/agg"+str(i)+".tif"
 
         if os.path.isfile(ascPath):

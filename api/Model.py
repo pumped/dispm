@@ -76,7 +76,9 @@ class ModelManager():
 	def __runModelJob(self, ids):
 		log.info('Model Kicked off')
 		path = Config.runPath + '/' + ids["run"]
-		outputPath = path + Config.aggregatesPath
+		#outputPath = Config.rasterPath + '/' + ids["run"]
+		outputPath = path + "/aggs/"
+		print "outputpath: " + outputPath
 		inputPath = path + '/'
 		paramPath = path + '/params.txt'
 
@@ -86,6 +88,8 @@ class ModelManager():
 		#if running modelling locally
 		if (self.local):
 			cmd = "stdbuf -oL " + Config.migExecutable + " " + paramPath + " " + inputPath + " " + outputPath
+
+			print cmd
 
 			#run process
 			proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=0, shell=True)
@@ -118,7 +122,7 @@ class ModelManager():
 							self.emit('{"event":"timeline_state","data":{"speciesID":"'+speciesID+'","timelineID":"'+timelineID+'","state":'+state+'}}')
 
 						if result[0] == self.STEPWRITTEN:
-							runFile = inputPath + "aggs/agg" + time + ".asc"
+							runFile = inputPath + "aggs/agg" + time + ".tif"
 							renderedFile = Config.rasterPath + ids["run"] + "/agg" + time + ".tif"
 
 							#render map
@@ -145,9 +149,10 @@ class ModelManager():
 			log.info(job.stdout)
 
 	def cleanupDirectory(self,path):
-		os.remove(path + "/ma.asc")
-		os.remove(path + "/max_pre1.asc")
-		os.remove(path + "/dist_p.asc")
+		pass
+		os.remove(path + "/ma.tif")
+		os.remove(path + "/max_pre1.tif")
+		os.remove(path + "/dist_p.tif")
 
 	def processOutput(self,output):
 		line = output.lower()
@@ -232,11 +237,11 @@ class ModelManager():
 		dmDest = dest + '/dist_p.asc'
 
 		#run async, export current distribution
-		distTifPath = dest+'/dist.tif'
+		distTifPath = dest+'/dist_p.tif'
 		distAscPath = dest+"/dist_p.asc"
 		distCmd = 'gdal_rasterize -burn 1 -a_nodata 0 -init 0 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM distribution WHERE species = \'siam\'" -of GTiff '+distTifPath
-		distCmd += " ; "
-		distCmd += "gdal_translate -a_nodata -9999 -of AAIGrid "+distTifPath+" "+distAscPath
+		#distCmd += " ; "
+		#distCmd += "gdal_translate -a_nodata -9999 -of AAIGrid "+distTifPath+" "+distAscPath
 		proc = subprocess.Popen(distCmd, stdout=subprocess.PIPE, bufsize=0, shell=True)
 
 		#rasterize Control Mechanisms
@@ -244,12 +249,12 @@ class ModelManager():
 		status = subprocess.call('gdal_rasterize -a "controlMechanism" -a_nodata -9999 -init -9999 -te 143.9165675170000043 -20.0251072599999986 147.0005675170000075 -14.9801072599999987 -ts 3084 5045 -a_srs "EPSG:3857" PG:"host=localhost user=postgres dbname=nyc password=password1" -sql "SELECT * FROM nyc_buildings WHERE timeline = \''+ids['timeline']+'\'" -of GTiff '+adjustTifPath, shell=True)
 
 		#translate to AAIGrid
-		maxPath = dest+'/ma.asc'
-		status = subprocess.call('gdal_translate -a_nodata -9999 -of AAIGrid '+adjustTifPath+' '+maxPath, shell=True)
+		#maxPath = dest+'/ma.asc'
+		#status = subprocess.call('gdal_translate -a_nodata -9999 -of AAIGrid '+adjustTifPath+' '+maxPath, shell=True)
 		#
 		# #cleanup intermediary files
 		# os.remove(mergedTifPath)
-		os.remove(adjustTifPath)
+		#os.remove(adjustTifPath)
 
 		#wait for distribution to finish
 		while True:
@@ -261,11 +266,11 @@ class ModelManager():
 				print output
 
 		#cleanup intermediary file
-		os.remove(distTifPath)
+		#os.remove(distTifPath)
 
 		#copy initial distribution map over
-		src = Config.initialFiles + '/max_pre1.asc'
-		dmDest = dest + '/max_pre1.asc'
+		src = Config.initialFiles + '/max_pre1.tif'
+		dmDest = dest + '/max_pre1.tif'
 		shutil.copyfile(src,dmDest)
 
 
