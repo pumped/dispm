@@ -220,7 +220,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
         }
         if (useBarrier)
         {
-            sprintf(fileName, "%s.asc", barrier);
+            sprintf(fileName, "%s.tif", barrier);
             if (readMat(fileName, barriers) == -1)
             {
                 *nrFiles = -1;                                           /* if readMat() return -1, an error occured  */
@@ -345,7 +345,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
             printf ("  %d...\n", envChgStep);
 
             /* Load the habitat suitability layer for the current envChgStep. */
-            sprintf (fileName, "%s%s%d.asc", inputDir, hsMap, envChgStep);
+            sprintf (fileName, "%s%s%d.tif", inputDir, hsMap, envChgStep);
             if (readMat (fileName, habSuitability) == -1)
             {
                 *nrFiles = -1;
@@ -493,8 +493,11 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
                             //delete it?
                             double r = UNIF01;
                             if (r <= 0.7) {
-                              currentState[i][j];
+                              currentState[i][j] = 0;
                               pixelAge[i][j] = 0;
+                              if (aggregates[dispStep-1][i][j] > 0) {
+                                aggregates[dispStep-1][i][j]--;
+                              }
                               managementImpacts[dispStep-1][IMPACT_CONTROL][procID-1]++;
                             }
                           }
@@ -829,7 +832,7 @@ int cellAction(int srcX, int srcY, int year) {
 
   int switchTime = getTimeFromActionString(managementActions[srcX][srcY]);
 
-  if (year < switchTime) {
+  if (year <= switchTime) {
     return pAction;
   }
   return sAction;

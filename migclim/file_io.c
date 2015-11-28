@@ -497,6 +497,7 @@ int readMat (char *fName, int **mat)
     GDALGetGeoTransform( hDataset, adfGeoTransform );
 
     projection = GDALGetProjectionRef( hDataset );
+    //printf( "Projection is `%s'\n", projection );
 
     //get band
     GDALRasterBandH hBand;
@@ -522,10 +523,10 @@ int readMat (char *fName, int **mat)
 
       //foreach item in scanline
       for (j=0; j<nXSize; j++) {
-        if (pafScanline[j] > 0) {
+        //if (pafScanline[j] > 0) {
           mat[i][j] = pafScanline[j];
-          //printf("%i ", pafScanline[j]);)
-        }
+          //printf("%i ", pafScanline[j]);
+        //}
       }
     }
     CPLFree(pafScanline);
@@ -557,51 +558,61 @@ int readMat (char *fName, int **mat)
 int writeMat (char *fName, int **mat)
 {
   int   i, j, status;
-  FILE *fp;
-
   status = 0;
-  fp = NULL;
 
-  /*
-  ** Open the file for writing.
-  */
-  if ((fp = fopen(fName, "w")) == NULL)
-  {
-    status = -1;
-    printf ("Can't open data file %s for writing.\n", fName);
-    goto End_of_Routine;
+  clock_t begin, end;
+  double time_spent;
+  begin = clock();
+
+  const char *pszFormat = "GTiff";
+  GDALDriverH hDriver = GDALGetDriverByName( pszFormat );
+
+  //get size
+  int   nXSize = nrCols;
+  int   nYSize = nrRows;
+
+  //set options
+  GDALDatasetH hDstDS;
+  char **papszOptions = NULL;
+  papszOptions = CSLSetNameValue( papszOptions, "COMPRESS", "DEFLATE" );
+
+  //create gtiff
+  hDstDS = GDALCreate( hDriver, fName, nXSize, nYSize, 1, GDT_Int32, papszOptions );
+
+  //set transform
+  GDALSetGeoTransform( hDstDS, adfGeoTransform );
+  projection = "PROJCS[\"WGS 84 / Pseudo-Mercator\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Mercator_1SP\"],PARAMETER[\"central_meridian\",0],PARAMETER[\"scale_factor\",1],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],EXTENSION[\"PROJ4\",\"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs\"],AUTHORITY[\"EPSG\",\"3857\"]]'";
+  GDALSetProjection( hDstDS, projection );
+  //printf( "Projection is `%s'\n", projection );
+
+  //setup bands
+  GDALRasterBandH hBand;
+  hBand = GDALGetRasterBand( hDstDS, 1 );
+
+
+  end = clock();
+  time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  printf("Create Time: %f \n",time_spent);
+
+  //for each scanline
+  for (i=0; i<nYSize; i++) {
+     GDALRasterIO( hBand, GF_Write, 0, i, nXSize, 1,
+                   mat[i], nXSize, 1, GDT_Int32,
+                   0, 0 );
   }
 
-  /*
-  ** Write the 'meta data'.
-  */
-  fprintf (fp, "ncols %d\n", nrCols);
-  fprintf (fp, "nrows %d\n", nrRows);
-  fprintf (fp, "xllcorner %.9f\n", xllCorner);
-  fprintf (fp, "yllcorner %.9f\n", yllCorner);
-  fprintf (fp, "cellsize %.9f\n", cellSize);
-  fprintf (fp, "NODATA_value %d\n", noData);
+  /* Once we're done, close properly the dataset */
+  if( hDstDS != NULL )
+      GDALClose( hDstDS );
 
-  /*
-  ** Write the data to file.
-  */
-  for (i = 0; i < nrRows; i++)
-  {
-    for (j = 0; j < nrCols; j++)
-    {
-      fprintf(fp, "%d ", mat[i][j]);
-    }
-    fprintf (fp, "\n");
-  }
+  end = clock();
+  time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  printf("Total Time: %f \n",time_spent);
 
   /*
   ** Close the file and return the status.
   */
  End_of_Routine:
-  if (fp != NULL)
-  {
-    fclose (fp);
-  }
   return (status);
 }
 
