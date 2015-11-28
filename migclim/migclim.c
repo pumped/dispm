@@ -49,6 +49,8 @@ int main( int argc, char const *argv[] ) {
     		return(0);
     	}
 
+      GDALAllRegister();
+
     	printf("Allocating Memory \n");
 
     //setup aggregates shared memory
@@ -400,7 +402,7 @@ void readManagementActions(char const *inputDir) {
       managementActions[i] = (int *)malloc (nrCols * sizeof (int));
   }
 
-  sprintf(fileName, "%s%s.asc", inputDir, "ma");
+  sprintf(fileName, "%s%s.tif", inputDir, "ma");
   readMat(fileName,managementActions);
 }
 

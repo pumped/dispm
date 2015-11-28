@@ -6,6 +6,14 @@
 
 #include "migclim.h"
 
+#include "gdal.h"
+#include "ogr_core.h"
+#include "ogr_srs_api.h"
+#include "cpl_conv.h" /* for CPLMalloc() */
+#include "cpl_string.h"
+
+#include <time.h>
+
 
 /*
 ** mcInit: Initialize the MigClim model by reading the parameter values from
@@ -476,109 +484,56 @@ int readMat (char *fName, int **mat)
   status = 0;
   fp = NULL;
 
-  /*
-  ** Open the file for reading.
-  */
-  if ((fp = fopen(fName, "r")) == NULL)
-  {
-    status = -1;
-    printf ("Can't open data file %s\n", fName);
-    goto End_of_Routine;
-  }
+  GDALDatasetH  hDataset;
 
-  /*
-  ** Get the 'meta data'.
-  */
-  if ((fgets (line, 1024, fp) == NULL) ||
-      (sscanf (line, "%s %d\n", param, &intVal) != 2) ||
-      (strcasecmp (param, "ncols") != 0))
+  hDataset = GDALOpen( fName, GA_ReadOnly );
+  if( hDataset == NULL )
   {
+    printf("Dataset Not Found \n");
     status = -1;
-    printf ("'ncols' expected in data file %s.\n", fName);
-    goto End_of_Routine;
-  }
-  if (intVal != nrCols)
-  {
-    status = -1;
-    printf ("Invalid number of columns in data file %s\n", fName);
-    goto End_of_Routine;
-  }
-  if ((fgets (line, 1024, fp) == NULL) ||
-      (sscanf (line, "%s %d\n", param, &intVal) != 2) ||
-      (strcasecmp (param, "nrows") != 0))
-  {
-    status = -1;
-    printf ("'nrows' expected in data file %s\n", fName);
-    goto End_of_Routine;
-  }
-  if (intVal != nrRows)
-  {
-    status = -1;
-    printf ("Invalid number of rows in data file %s.\n", fName);
-    goto End_of_Routine;
-  }
-  if ((fgets (line, 1024, fp) == NULL) ||
-      (sscanf (line, "%s %s\n", param, dblVal) != 2) ||
-      (strcasecmp (param, "xllcorner") != 0))
-  {
-    status = -1;
-    printf ("'xllcorner' expected in data file %s\n", fName);
-    goto End_of_Routine;
-  }
-  xllCorner = strtod (dblVal, NULL);
-  if ((fgets (line, 1024, fp) == NULL) ||
-      (sscanf (line, "%s %s\n", param, dblVal) != 2) ||
-      (strcasecmp (param, "yllcorner") != 0))
-  {
-    status = -1;
-    printf ("'yllcorner' expected in data file %s\n", fName);
-    goto End_of_Routine;
-  }
-  yllCorner = strtod (dblVal, NULL);
-  if ((fgets (line, 1024, fp) == NULL) ||
-      (sscanf (line, "%s %s\n", param, dblVal) != 2) ||
-      (strcasecmp (param, "cellsize") != 0))
-  {
-    status = -1;
-    printf ("'cellsize' expected in data file %s\n", fName);
-    goto End_of_Routine;
-  }
-  cellSize = strtod (dblVal, NULL);
-  if ((fgets (line, 1024, fp) == NULL) ||
-      (sscanf (line, "%s %d\n", param, &noData) != 2) ||
-      (strcasecmp (param, "nodata_value") != 0))
-  {
-    status = -1;
-    printf ("'NODATA_value' expected in data file %s\n", fName);
-    goto End_of_Routine;
-  }
+  } else {
 
-  /*
-  ** Read the values into the matrix.
-  */
-  for (i = 0; i < nrRows; i++)
-  {
-    for (j = 0; j < nrCols; j++)
-    {
-      if (fscanf(fp, "%d", &intVal) != 1)
-      {
-	    status = -1;
-        printf ("Invalid value in data file %s\n", fName);
-        goto End_of_Routine;
-      }
-      mat[i][j] = intVal;
+    //save georeference
+    GDALGetGeoTransform( hDataset, adfGeoTransform );
+
+    projection = GDALGetProjectionRef( hDataset );
+
+    //get band
+    GDALRasterBandH hBand;
+    hBand = GDALGetRasterBand( hDataset, 1 );
+
+    //load band metadata
+    int *pafScanline;
+    int   nXSize = GDALGetRasterBandXSize( hBand );
+    int   nYSize = GDALGetRasterBandYSize( hBand );
+
+    if (nrCols != nXSize || nrRows != nYSize) {
+      return -1;
     }
-    intVal = fscanf (fp, "\n");
+
+    pafScanline = (int *) CPLMalloc(sizeof(int)*nXSize);
+    int i,j;
+    //for each scanline
+    for (i=0; i<nYSize; i++) {
+      // load scanline into memory
+      GDALRasterIO( hBand, GF_Read, 0, i, nXSize, 1,
+                    pafScanline, nXSize, 1, GDT_Int32,
+                    0, 0 );
+
+      //foreach item in scanline
+      for (j=0; j<nXSize; j++) {
+        if (pafScanline[j] > 0) {
+          mat[i][j] = pafScanline[j];
+          //printf("%i ", pafScanline[j]);)
+        }
+      }
+    }
+    CPLFree(pafScanline);
+
+    //close dataset
+    GDALClose(hDataset);
   }
 
- End_of_Routine:
-  /*
-  ** Close the file and return the status.
-  */
-  if (fp != NULL)
-  {
-    fclose (fp);
-  }
   return (status);
 }
 

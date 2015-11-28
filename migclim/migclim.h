@@ -58,6 +58,9 @@ extern double *dispKernel, *propaguleProd, lddFreq, xllCorner, yllCorner,
 extern char    iniDist[128], hsMap[128], simulName[128], barrier[128];
 extern bool    useBarrier, fullOutput;
 
+double adfGeoTransform[6];
+const char *projection;
+
 int ***aggregates;
 int *aggregates_data;
 int shmid2;

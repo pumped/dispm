@@ -199,7 +199,7 @@ void mcMigrate (char const **paramFile, int *nrFiles, char const *inputDir, char
         /* Load and prepare the data. */
 
         /* Species initial distribution */
-        sprintf(fileName, "%s%s.asc", inputDir, iniDist);                        /* sprinf(): puts a string into variable fileName */
+        sprintf(fileName, "%s%s.tif", inputDir, iniDist);                        /* sprinf(): puts a string into variable fileName */
         printf("%s", fileName);
         if (readMat(fileName, currentState) == -1)
         {
